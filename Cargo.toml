@@ -1,10 +1,9 @@
 [package]
 name = "vectorless"
 version = "0.1.0"
-edition = "2021"
-rust-version = "1.75"
+edition = "2024"
 
-authors = ["ztgx <ztgx@example.com>"]
+authors = ["zTgx <beautifularea@gmail.com>"]
 description = "A lightweight document indexing engine without vectorization"
 documentation = "https://docs.rs/vectorless"
 readme = "README.md"
