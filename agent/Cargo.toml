@@ -1,0 +1,17 @@
+[package]
+name = "vectorless-agent"
+version = "0.1.0"
+edition = "2024"
+
+authors = ["zTgx <beautifularea@gmail.com>"]
+description = "Agent framework for vectorless - LLM-powered autonomous agents"
+license = "MIT OR Apache-2.0"
+keywords = ["agent", "llm", "autonomous", "tools"]
+categories = ["api-bindings", "development-tools"]
+
+[dependencies]
+vectorless-llm = { path = "../llm" }
+serde = { workspace = true }
+serde_json = "1.0"
+async-trait = { workspace = true }
+thiserror = { workspace = true }

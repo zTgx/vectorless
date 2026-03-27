@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "core",
     "llm",
+    "agent",
     "rag",
     "cli",
     "sdk",
@@ -20,6 +21,7 @@ repository = "https://github.com/ztgx/vectorless"
 # Internal crates
 vectorless-core = { path = "core" }
 vectorless-llm = { path = "llm" }
+vectorless-agent = { path = "agent" }
 
 # External dependencies
 serde = { version = "1.0", features = ["derive"] }
