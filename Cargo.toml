@@ -1,0 +1,40 @@
+[package]
+name = "vectorless"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+
+authors = ["ztgx <ztgx@example.com>"]
+description = "A lightweight document indexing engine without vectorization"
+documentation = "https://docs.rs/vectorless"
+readme = "README.md"
+repository = "https://github.com/ztgx/vectorless"
+license = "MIT OR Apache-2.0"
+keywords = ["search", "index", "document", "full-text-search"]
+categories = ["text-processing", "data-structures", "algorithms"]
+
+exclude = [".github/", "docs/", "examples/", "benches/"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[features]
+default = ["std"]
+std = []
+serde = ["dep:serde"]
+
+[dependencies]
+serde = { version = "1.0", optional = true, features = ["derive"] }
+
+[dev-dependencies]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+
+[profile.bench]
+inherits = "release"
+debug = true
