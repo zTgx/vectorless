@@ -1,6 +1,6 @@
 # vectorless
 
-This is a simple example of how to use Rust's vectorless feature.
+This is a simple example of how the vectorless library works.
 ```shell
 > Hello! How can I help you today?
 
