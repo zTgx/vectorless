@@ -40,3 +40,7 @@ pub mod chat;
 
 #[cfg(feature = "embedding")]
 pub mod embedding;
+
+pub mod zai;
+
+pub use zai::{ZaiClient, ZAI_API_BASE, ZAI_CODING_BASE};

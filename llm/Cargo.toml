@@ -18,3 +18,4 @@ embedding = []
 serde = { workspace = true }
 async-trait = { workspace = true }
 thiserror = { workspace = true }
+reqwest = { version = "0.12", features = ["json"] }

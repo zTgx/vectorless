@@ -10,3 +10,4 @@ vectorless-core = { path = "../../core" }
 vectorless-llm = { path = "../../llm" }
 async-trait = { workspace = true }
 tokio = { workspace = true }
+dotenv = "0.15"
