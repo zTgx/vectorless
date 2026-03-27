@@ -1,32 +1,30 @@
-[package]
-name = "vectorless"
+[workspace]
+resolver = "2"
+members = [
+    "core",
+    "rag",
+    "cli",
+    "sdk",
+    "examples/basic",
+    "examples/rag_client",
+]
+
+[workspace.package]
 version = "0.1.0"
 edition = "2024"
-
 authors = ["zTgx <beautifularea@gmail.com>"]
-description = "A lightweight document indexing engine without vectorization"
-documentation = "https://docs.rs/vectorless"
-readme = "README.md"
-repository = "https://github.com/ztgx/vectorless"
 license = "MIT OR Apache-2.0"
-keywords = ["search", "index", "document", "full-text-search"]
-categories = ["text-processing", "data-structures", "algorithms"]
+repository = "https://github.com/ztgx/vectorless"
 
-exclude = [".github/", "docs/", "examples/", "benches/"]
+[workspace.dependencies]
+# Internal crates
+vectorless-core = { path = "core" }
 
-[package.metadata.docs.rs]
-all-features = true
-rustdoc-args = ["--cfg", "docsrs"]
-
-[features]
-default = ["std"]
-std = []
-serde = ["dep:serde"]
-
-[dependencies]
-serde = { version = "1.0", optional = true, features = ["derive"] }
-
-[dev-dependencies]
+# External dependencies
+serde = { version = "1.0", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
+clap = { version = "4", features = ["derive"] }
+reqwest = { version = "0.12", features = ["json"] }
 
 [profile.release]
 opt-level = 3

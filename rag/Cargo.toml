@@ -1,0 +1,15 @@
+[package]
+name = "vectorless-rag"
+version = "0.1.0"
+edition = "2024"
+
+authors = ["zTgx <beautifularea@gmail.com>"]
+description = "RAG service for vectorless - HTTP/gRPC server"
+license = "MIT OR Apache-2.0"
+keywords = ["rag", "server", "http", "grpc"]
+categories = ["web-programming", "api-bindings"]
+
+[dependencies]
+vectorless-core = { path = "../core" }
+
+tokio = { version = "1", features = ["full"] }

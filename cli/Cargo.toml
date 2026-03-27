@@ -1,0 +1,19 @@
+[package]
+name = "vectorless-cli"
+version = "0.1.0"
+edition = "2024"
+
+authors = ["zTgx <beautifularea@gmail.com>"]
+description = "Command-line tool for vectorless"
+license = "MIT OR Apache-2.0"
+keywords = ["cli", "search", "index"]
+categories = ["command-line-utilities"]
+
+[[bin]]
+name = "vectorless"
+path = "src/main.rs"
+
+[dependencies]
+vectorless-core = { path = "../core" }
+
+clap = { version = "4", features = ["derive"] }

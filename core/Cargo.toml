@@ -1,0 +1,18 @@
+[package]
+name = "vectorless-core"
+version = "0.1.0"
+edition = "2024"
+
+authors = ["zTgx <beautifularea@gmail.com>"]
+description = "Core library for vectorless - parsing, indexing, and retrieval"
+license = "MIT OR Apache-2.0"
+keywords = ["search", "index", "document", "full-text-search"]
+categories = ["text-processing", "data-structures", "algorithms"]
+
+[features]
+default = ["std"]
+std = []
+serde = ["dep:serde"]
+
+[dependencies]
+serde = { version = "1.0", optional = true, features = ["derive"] }
