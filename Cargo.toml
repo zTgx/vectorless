@@ -2,6 +2,7 @@
 resolver = "2"
 members = [
     "core",
+    "llm",
     "rag",
     "cli",
     "sdk",
@@ -18,9 +19,12 @@ repository = "https://github.com/ztgx/vectorless"
 [workspace.dependencies]
 # Internal crates
 vectorless-core = { path = "core" }
+vectorless-llm = { path = "llm" }
 
 # External dependencies
 serde = { version = "1.0", features = ["derive"] }
+async-trait = "0.1"
+thiserror = "2"
 tokio = { version = "1", features = ["full"] }
 clap = { version = "4", features = ["derive"] }
 reqwest = { version = "0.12", features = ["json"] }
