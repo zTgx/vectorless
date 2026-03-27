@@ -45,8 +45,35 @@ fn load_config() -> Result<Config, Box<dyn std::error::Error>> {
 
     let contents = std::fs::read_to_string(config_path)?;
     let config: Config = toml::from_str(&contents)?;
+    println!("Configuration loaded successfully : {:?}", config);
 
     Ok(config)
+}
+
+/// Test API connection before processing
+async fn test_api_connection(api_key: &str, endpoint: &str) -> Result<(), Box<dyn std::error::Error>> {
+    println!("Testing API connection to {}...", endpoint);
+
+    let llm = ZaiClient::with_endpoint(api_key, endpoint);
+    let messages = vec![
+        vectorless_llm::chat::Message {
+            role: vectorless_llm::chat::Role::User,
+            content: "Hello".to_string(),
+        },
+    ];
+
+    match llm.chat(&messages, &vectorless_llm::chat::ChatOptions {
+        temperature: Some(0.0),
+        max_tokens: Some(10),
+    }).await {
+        Ok(response) => {
+            println!("API connection successful! Response: {}", response.content);
+            Ok(())
+        }
+        Err(e) => {
+            Err(format!("API connection failed: {}", e).into())
+        }
+    }
 }
 
 /// Build the index from a document with custom config.
@@ -143,7 +170,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Using endpoint: {}", endpoint);
 
-    let doc_path = "document.md";
+    // Test API connection first
+    println!("\nTesting API connection...");
+    if let Err(e) = test_api_connection(api_key, endpoint).await {
+        println!("API connection test failed: {}", e);
+        println!("Please check:");
+        println!("  1. Your API key is correct");
+        println!("  2. The endpoint URL is correct");
+        println!("  3. Your network connection is working");
+        println!("  4. The API service is available");
+        return Err(e);
+    }
+    println!("API connection test passed!\n");
+
+    let doc_path = "docs/document.md";
 
     // Check if document exists
     if Path::new(doc_path).exists() {

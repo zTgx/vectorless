@@ -21,6 +21,26 @@ struct SegmentResponse {
     sections: Vec<Section>,
 }
 
+/// Extract JSON from a response that may contain extra text.
+fn extract_json(text: &str) -> Result<String, String> {
+    let text = text.trim();
+
+    // If the entire text is valid JSON, return it
+    if let Ok(_) = serde_json::from_str::<serde_json::Value>(text) {
+        return Ok(text.to_string());
+    }
+
+    // Try to find JSON object boundaries
+    let start = text.find('{').ok_or_else(|| "No JSON object found".to_string())?;
+    let end = text.rfind('}').ok_or_else(|| "No JSON object found".to_string())?;
+
+    if start >= end {
+        return Err("Invalid JSON object bounds".to_string());
+    }
+
+    Ok(text[start..=end].to_string())
+}
+
 /// Split text into logical sections using the LLM.
 async fn segment<M>(llm: &M, text: &str, max_tokens: u32) -> Result<Vec<Section>, Error>
 where
@@ -34,12 +54,12 @@ where
     };
 
     let prompt = format!(
-        r#"Split the following text into logical sections.
-Return a JSON object with a "sections" key. Each item has:
-- "title": short title (5 words or less)
-- "content": the text belonging to this section
+        r#"You are a document parser. Split the following text into logical sections.
 
-Text:
+Return ONLY a valid JSON object (no additional text). Format:
+{{"sections":[{{"title":"short title","content":"text belonging to this section"}},...]}}
+
+Text to parse:
 {}"#,
         truncated
     );
@@ -58,9 +78,13 @@ Text:
         .await
         .map_err(|e| Error::Llm(e.to_string()))?;
 
+    // Extract JSON from response (in case LLM added extra text)
+    let json_str = extract_json(&response.content)
+        .map_err(|e| Error::InvalidJson(format!("Failed to extract JSON: {}. Response was: {}", e, response.content)))?;
+
     // Parse JSON response
-    let parsed: SegmentResponse = serde_json::from_str(&response.content)
-        .map_err(|e| Error::InvalidJson(e.to_string()))?;
+    let parsed: SegmentResponse = serde_json::from_str(&json_str)
+        .map_err(|e| Error::InvalidJson(format!("JSON parse error: {}. Content was: {}", e, json_str)))?;
 
     Ok(parsed.sections)
 }

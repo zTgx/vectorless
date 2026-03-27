@@ -7,6 +7,7 @@ use super::chat::{ChatCompletion, ChatModel, ChatOptions, Error as ChatError, Me
 use async_trait::async_trait;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use std::time::Duration;
 
 /// Default base URL for ZAI API (general purpose).
 pub const ZAI_API_BASE: &str = "https://api.z.ai/api/paas/v4";
@@ -26,9 +27,14 @@ pub struct ZaiClient {
 impl ZaiClient {
     /// Create a new ZAI client with the given API key (uses general endpoint).
     pub fn new(api_key: impl Into<String>) -> Self {
+        let client = Client::builder()
+            .timeout(Duration::from_secs(120))
+            .build()
+            .unwrap();
+
         Self {
             api_key: api_key.into(),
-            client: Client::new(),
+            client,
             model: "glm-5".to_string(),
             base_url: ZAI_API_BASE.to_string(),
         }
@@ -36,9 +42,14 @@ impl ZaiClient {
 
     /// Create a new ZAI client with custom endpoint.
     pub fn with_endpoint(api_key: impl Into<String>, endpoint: impl Into<String>) -> Self {
+        let client = Client::builder()
+            .timeout(Duration::from_secs(120))
+            .build()
+            .unwrap();
+
         Self {
             api_key: api_key.into(),
-            client: Client::new(),
+            client,
             model: "glm-5".to_string(),
             base_url: endpoint.into(),
         }
@@ -46,9 +57,14 @@ impl ZaiClient {
 
     /// Create a new ZAI client with custom model.
     pub fn with_model(api_key: impl Into<String>, model: impl Into<String>) -> Self {
+        let client = Client::builder()
+            .timeout(Duration::from_secs(120))
+            .build()
+            .unwrap();
+
         Self {
             api_key: api_key.into(),
-            client: Client::new(),
+            client,
             model: model.into(),
             base_url: ZAI_API_BASE.to_string(),
         }
@@ -56,9 +72,14 @@ impl ZaiClient {
 
     /// Create a new ZAI client for coding scenarios.
     pub fn for_coding(api_key: impl Into<String>) -> Self {
+        let client = Client::builder()
+            .timeout(Duration::from_secs(120))
+            .build()
+            .unwrap();
+
         Self {
             api_key: api_key.into(),
-            client: Client::new(),
+            client,
             model: "glm-5".to_string(),
             base_url: ZAI_CODING_BASE.to_string(),
         }
@@ -70,9 +91,14 @@ impl ZaiClient {
         model: impl Into<String>,
         endpoint: impl Into<String>,
     ) -> Self {
+        let client = Client::builder()
+            .timeout(Duration::from_secs(120))
+            .build()
+            .unwrap();
+
         Self {
             api_key: api_key.into(),
-            client: Client::new(),
+            client,
             model: model.into(),
             base_url: endpoint.into(),
         }
@@ -113,16 +139,23 @@ impl ChatModel for ZaiClient {
             stream: false,
         };
 
+        let url = format!("{}/chat/completions", self.base_url);
+
         let response = self
             .client
-            .post(format!("{}/chat/completions", self.base_url))
+            .post(&url)
             .header("Content-Type", "application/json")
             .header("Accept-Language", "en-US,en")
             .header("Authorization", format!("Bearer {}", self.api_key))
             .json(&request)
             .send()
             .await
-            .map_err(|e| ChatError::RequestFailed(e.to_string()))?;
+            .map_err(|e| {
+                ChatError::RequestFailed(format!(
+                    "Failed to send request to {}: {}",
+                    url, e
+                ))
+            })?;
 
         if !response.status().is_success() {
             let status = response.status();
@@ -139,7 +172,10 @@ impl ChatModel for ZaiClient {
         let zai_response: ZaiResponse = response
             .json()
             .await
-            .map_err(|e| ChatError::InvalidResponse(e.to_string()))?;
+            .map_err(|e| ChatError::InvalidResponse(format!(
+                "Failed to parse response: {}",
+                e
+            )))?;
 
         Ok(ChatCompletion {
             content: zai_response.choices.first().map(|c| c.message.content.clone())
