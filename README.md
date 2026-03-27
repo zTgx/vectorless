@@ -1,9 +1,5 @@
 # vectorless
 
-[![ crates.io ]](https://img.shields.io/crates/v/vectorless)](https://crates.io/crates/vectorless)
-[![ documentation ]](https://img.shields.io/docsrs/vectorless)](https://docs.rs/vectorless)
-[![ license ]](https://img.shields.io/crates/l/vectorless)](#license)
-
 A lightweight document indexing engine without vectorization.
 
 ## Overview
