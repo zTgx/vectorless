@@ -27,33 +27,23 @@ struct LlmConfig {
 struct ZaiConfig {
     api_key: String,
     #[serde(default)]
-    base_url: Option<String>,
+    endpoint: Option<String>,
     // Additional fields available for future use:
-    // coding_url: Option<String>,
     // model: Option<String>,
 }
 
-/// Load configuration from .config.toml or .config.toml.local
+/// Load configuration from .config.toml
 fn load_config() -> Result<Config, Box<dyn std::error::Error>> {
-    // Try .config.toml.local first (for local overrides), then .config.toml
-    let config_path = Path::new(".config.toml.local");
-    let fallback_path = Path::new(".config.toml");
+    let config_path = Path::new(".config.toml");
 
-    let path = if config_path.exists() {
-        config_path
-    } else {
-        fallback_path
-    };
-
-    if !path.exists() {
+    if !config_path.exists() {
         return Err(format!(
-            "Configuration file not found. Please create {} or {}.\n\nExample:\n[llm.zai]\napi_key = \"your-api-key-here\"",
-            config_path.display(),
-            fallback_path.display()
+            "Configuration file not found. Please create {}.\n\nExample:\n[llm.zai]\napi_key = \"your-api-key-here\"\nendpoint = \"https://api.z.ai/api/paas/v4\"",
+            config_path.display()
         ).into());
     }
 
-    let contents = std::fs::read_to_string(path)?;
+    let contents = std::fs::read_to_string(config_path)?;
     let config: Config = toml::from_str(&contents)?;
 
     Ok(config)
@@ -141,16 +131,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("");
             println!("[llm.zai]");
             println!("api_key = \"your-api-key-here\"");
-            println!("# base_url = \"https://api.z.ai/api/paas/v4\"");
-            println!("# coding_url = \"https://api.z.ai/api/coding/paas/v4\"");
-            println!("# model = \"glm-5\"");
+            println!("endpoint = \"https://api.z.ai/api/paas/v4\"");
             return Ok(());
         }
     };
 
     let zai_config = &config.llm.zai;
     let api_key = &zai_config.api_key;
-    let endpoint = zai_config.base_url.as_deref()
+    let endpoint = zai_config.endpoint.as_deref()
         .unwrap_or("https://api.z.ai/api/paas/v4");
 
     println!("Using endpoint: {}", endpoint);
