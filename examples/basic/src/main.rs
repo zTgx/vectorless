@@ -8,25 +8,63 @@ use vectorless_core::{
     build_summaries_with_config, load, parse_document_with_config, retrieve, save,
     IndexerConfig, PageNodeRef,
 };
-use vectorless_llm::{chat::ChatModel, zai::ZaiClient, ZAI_API_BASE};
+use vectorless_llm::chat::ChatModel;
+use vectorless_llm::zai::ZaiClient;
+use serde::Deserialize;
 
-fn load_env() {
-    // Load .env file if it exists
-    dotenv::dotenv().ok();
+/// Configuration from .config.toml
+#[derive(Debug, Deserialize)]
+struct Config {
+    llm: LlmConfig,
 }
 
-fn get_api_key() -> Result<String, Box<dyn std::error::Error>> {
-    std::env::var("ZAI_API_KEY").map_err(|_| {
-        "ZAI_API_KEY not found in environment or .env file. Please set it before running.".into()
-    })
+#[derive(Debug, Deserialize)]
+struct LlmConfig {
+    zai: ZaiConfig,
 }
 
-fn get_endpoint() -> String {
-    std::env::var("ZAI_ENDPOINT").unwrap_or_else(|_| ZAI_API_BASE.to_string())
+#[derive(Debug, Deserialize)]
+struct ZaiConfig {
+    api_key: String,
+    #[serde(default)]
+    base_url: Option<String>,
+    // Additional fields available for future use:
+    // coding_url: Option<String>,
+    // model: Option<String>,
+}
+
+/// Load configuration from .config.toml or .config.toml.local
+fn load_config() -> Result<Config, Box<dyn std::error::Error>> {
+    // Try .config.toml.local first (for local overrides), then .config.toml
+    let config_path = Path::new(".config.toml.local");
+    let fallback_path = Path::new(".config.toml");
+
+    let path = if config_path.exists() {
+        config_path
+    } else {
+        fallback_path
+    };
+
+    if !path.exists() {
+        return Err(format!(
+            "Configuration file not found. Please create {} or {}.\n\nExample:\n[llm.zai]\napi_key = \"your-api-key-here\"",
+            config_path.display(),
+            fallback_path.display()
+        ).into());
+    }
+
+    let contents = std::fs::read_to_string(path)?;
+    let config: Config = toml::from_str(&contents)?;
+
+    Ok(config)
 }
 
 /// Build the index from a document with custom config.
-async fn build_index(api_key: &str, endpoint: &str, doc_path: &str) -> Result<PageNodeRef, Box<dyn std::error::Error>> {
+async fn build_index(
+    api_key: &str,
+    endpoint: &str,
+    doc_path: &str,
+) -> Result<PageNodeRef, Box<dyn std::error::Error>> {
     println!("Parsing document...");
     let text = std::fs::read_to_string(doc_path)?;
 
@@ -53,7 +91,11 @@ async fn build_index(api_key: &str, endpoint: &str, doc_path: &str) -> Result<Pa
 }
 
 /// Query the index and generate an answer.
-async fn ask(api_key: &str, endpoint: &str, query: &str) -> Result<String, Box<dyn std::error::Error>> {
+async fn ask(
+    api_key: &str,
+    endpoint: &str,
+    query: &str,
+) -> Result<String, Box<dyn std::error::Error>> {
     let index_path = "index.json";
 
     if !Path::new(index_path).exists() {
@@ -90,26 +132,28 @@ async fn ask(api_key: &str, endpoint: &str, query: &str) -> Result<String, Box<d
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Load environment variables from .env file
-    load_env();
-
-    // Get API key
-    let api_key = match get_api_key() {
-        Ok(key) => key,
+    // Load configuration from .config.toml
+    let config = match load_config() {
+        Ok(cfg) => cfg,
         Err(e) => {
-            println!("Error: {}", e);
-            println!("\nCreate a .env file with:");
-            println!("ZAI_API_KEY=your-api-key-here");
-            println!("\nOr set the environment variable:");
-            println!("export ZAI_API_KEY=your-api-key-here");
+            println!("Error loading configuration: {}", e);
+            println!("\nCreate a .config.toml file with your ZAI credentials:");
+            println!("");
+            println!("[llm.zai]");
+            println!("api_key = \"your-api-key-here\"");
+            println!("# base_url = \"https://api.z.ai/api/paas/v4\"");
+            println!("# coding_url = \"https://api.z.ai/api/coding/paas/v4\"");
+            println!("# model = \"glm-5\"");
             return Ok(());
         }
     };
 
-    let endpoint = get_endpoint();
-    if endpoint != ZAI_API_BASE {
-        println!("Using custom endpoint: {}", endpoint);
-    }
+    let zai_config = &config.llm.zai;
+    let api_key = &zai_config.api_key;
+    let endpoint = zai_config.base_url.as_deref()
+        .unwrap_or("https://api.z.ai/api/paas/v4");
+
+    println!("Using endpoint: {}", endpoint);
 
     let doc_path = "document.md";
 
@@ -117,15 +161,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if Path::new(doc_path).exists() {
         // Build the index
         println!("Building index...");
-        match build_index(&api_key, &endpoint, doc_path).await {
+        match build_index(api_key, endpoint, doc_path).await {
             Ok(_) => println!("Index built successfully!"),
             Err(e) => {
                 println!("Error building index: {}", e);
-                println!("Note: Make sure ZAI_API_KEY is set correctly and the API is accessible");
+                println!("Note: Make sure api_key is correct and the API is accessible");
             }
         }
     } else {
-        println!("Document file '{}' not found. Skipping index build.", doc_path);
+        println!(
+            "Document file '{}' not found. Skipping index build.",
+            doc_path
+        );
         println!("Create a document.md file to test the indexing pipeline.");
     }
 
@@ -133,7 +180,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if Path::new("index.json").exists() {
         let query = "What is this document about?";
         println!("\nQuery: {}", query);
-        match ask(&api_key, &endpoint, query).await {
+        match ask(api_key, endpoint, query).await {
             Ok(answer) => println!("Answer: {}", answer),
             Err(e) => println!("Error: {}", e),
         }
