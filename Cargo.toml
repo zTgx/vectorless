@@ -6,7 +6,6 @@ members = [
     "cli",
     "sdk",
     "examples/basic",
-    "examples/rag_client",
 ]
 
 [workspace.package]
