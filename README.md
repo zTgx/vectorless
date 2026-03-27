@@ -2,6 +2,10 @@
 
 This is a simple example of how the vectorless library works.
 ```shell
+cargo run --package basic --bin basic
+```
+
+```shell
 > Hello! How can I help you today?
 
 Building index...

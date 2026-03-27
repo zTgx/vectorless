@@ -1,0 +1,14 @@
+# vectorless configuration example
+# Copy this file to .config.toml and add your actual credentials
+
+[llm.zai]
+# ZAI API key - get from https://z.ai
+api_key = "your-api-key-here"
+
+# API endpoint
+# General purpose: https://api.z.ai/api/paas/v4
+# Coding scenarios: https://api.z.ai/api/coding/paas/v4
+endpoint = "https://api.z.ai/api/paas/v4"
+
+# Default model
+model = "glm-5"
