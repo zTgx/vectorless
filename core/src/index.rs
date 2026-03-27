@@ -3,15 +3,20 @@
 
 //! Index builder: traverse tree and build summaries.
 
+use crate::config::IndexerConfig;
 use crate::node::PageNodeRef;
 use vectorless_llm::chat::{ChatModel, Message, Role, ChatOptions};
 
-/// Build summaries for all nodes in the tree.
+/// Build summaries for all nodes in the tree with custom config.
 ///
 /// Traverses the tree post-order (children before parent).
 /// - Leaves summarize their own content
 /// - Inner nodes summarize their children's summaries
-pub async fn build_summaries<M>(llm: &M, root: &PageNodeRef) -> Result<(), Error>
+pub async fn build_summaries_with_config<M>(
+    llm: &M,
+    root: &PageNodeRef,
+    config: &IndexerConfig,
+) -> Result<(), Error>
 where
     M: ChatModel,
 {
@@ -32,7 +37,7 @@ where
                 if content.trim().is_empty() {
                     "(empty section)".to_string()
                 } else {
-                    summarize(llm, &content, &title).await?
+                    summarize(llm, &content, &title, config).await?
                 }
             } else {
                 // Build parent summary from children's summaries
@@ -48,7 +53,7 @@ where
                         .collect()
                 };
                 let children_text = children_summaries.join("\n\n");
-                summarize(llm, &children_text, &title).await?
+                summarize(llm, &children_text, &title, config).await?
             };
 
             node.borrow_mut().summary = summary;
@@ -72,13 +77,30 @@ where
     Ok(())
 }
 
+/// Build summaries for all nodes in the tree with default config.
+pub async fn build_summaries<M>(llm: &M, root: &PageNodeRef) -> Result<(), Error>
+where
+    M: ChatModel,
+{
+    build_summaries_with_config(llm, root, &IndexerConfig::default()).await
+}
+
 /// Summarize text using the LLM.
-async fn summarize<M>(llm: &M, text: &str, section_name: &str) -> Result<String, Error>
+async fn summarize<M>(
+    llm: &M,
+    text: &str,
+    section_name: &str,
+    config: &IndexerConfig,
+) -> Result<String, Error>
 where
     M: ChatModel,
 {
     // Truncate text to avoid context limits
-    let truncated = if text.len() > 3000 { &text[..3000] } else { text };
+    let truncated = if text.len() > 3000 {
+        &text[..3000]
+    } else {
+        text
+    };
 
     let hint = if section_name.is_empty() {
         String::new()
@@ -99,7 +121,7 @@ where
             }],
             &ChatOptions {
                 temperature: Some(0.0),
-                max_tokens: Some(150),
+                max_tokens: Some(config.max_summary_tokens),
             },
         )
         .await

@@ -13,9 +13,11 @@ pub mod parse;
 pub mod index;
 pub mod storage;
 pub mod retriever;
+pub mod config;
 
 pub use node::{PageNode, PageNodeRef};
-pub use parse::{parse_document, Error as ParseError, SUBSECTION_THRESHOLD};
-pub use index::{build_summaries, Error as IndexError};
+pub use parse::{parse_document, parse_document_with_config, Error as ParseError};
+pub use index::{build_summaries, build_summaries_with_config, Error as IndexError};
 pub use storage::{save, load, Error as StorageError};
 pub use retriever::{retrieve, Error as RetrieverError};
+pub use config::{IndexerConfig, IndexerConfigBuilder};

@@ -3,12 +3,10 @@
 
 //! Document parsing for building the index tree.
 
+use crate::config::IndexerConfig;
 use crate::node::{PageNode, PageNodeRef};
 use serde::{Deserialize, Serialize};
 use vectorless_llm::chat::{ChatModel, Message, Role, ChatOptions};
-
-/// Threshold in words for splitting a section into subsections.
-pub const SUBSECTION_THRESHOLD: usize = 300;
 
 /// A section returned by the LLM splitter.
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -24,7 +22,7 @@ struct SegmentResponse {
 }
 
 /// Split text into logical sections using the LLM.
-async fn segment<M>(llm: &M, text: &str) -> Result<Vec<Section>, Error>
+async fn segment<M>(llm: &M, text: &str, max_tokens: u32) -> Result<Vec<Section>, Error>
 where
     M: ChatModel,
 {
@@ -54,7 +52,7 @@ Text:
             }],
             &ChatOptions {
                 temperature: Some(0.0),
-                max_tokens: Some(3000),
+                max_tokens: Some(max_tokens),
             },
         )
         .await
@@ -67,8 +65,12 @@ Text:
     Ok(parsed.sections)
 }
 
-/// Parse a document into a tree structure using the LLM.
-pub async fn parse_document<M>(llm: &M, text: &str) -> Result<PageNodeRef, Error>
+/// Parse a document into a tree structure using the LLM with custom config.
+pub async fn parse_document_with_config<M>(
+    llm: &M,
+    text: &str,
+    config: &IndexerConfig,
+) -> Result<PageNodeRef, Error>
 where
     M: ChatModel,
 {
@@ -76,7 +78,7 @@ where
     root.borrow_mut().depth = 0;
 
     // First pass: split into top-level sections
-    let sections = segment(llm, text).await?;
+    let sections = segment(llm, text, config.max_segment_tokens as u32).await?;
 
     for item in sections {
         let title = item.title;
@@ -88,9 +90,9 @@ where
 
         let word_count = content.split_whitespace().count();
 
-        if word_count > SUBSECTION_THRESHOLD {
+        if word_count > config.subsection_threshold {
             // Second pass: split long sections into subsections
-            let subsections = segment(llm, &content).await?;
+            let subsections = segment(llm, &content, config.max_segment_tokens as u32).await?;
 
             if subsections.len() > 1 {
                 for sub in subsections {
@@ -113,6 +115,14 @@ where
     }
 
     Ok(root)
+}
+
+/// Parse a document into a tree structure using the LLM with default config.
+pub async fn parse_document<M>(llm: &M, text: &str) -> Result<PageNodeRef, Error>
+where
+    M: ChatModel,
+{
+    parse_document_with_config(llm, text, &IndexerConfig::default()).await
 }
 
 /// Parse error types.

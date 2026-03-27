@@ -5,7 +5,8 @@
 
 use std::path::Path;
 use vectorless_core::{
-    build_summaries, load, parse_document, retrieve, save, PageNodeRef,
+    build_summaries_with_config, load, parse_document_with_config, retrieve, save,
+    IndexerConfig, PageNodeRef,
 };
 use vectorless_llm::chat::{ChatModel, Message, Role, ChatOptions};
 
@@ -27,15 +28,41 @@ impl ChatModel for MockLlm {
     }
 }
 
-/// Build the index from a document.
+/// Build the index from a document with custom config.
 async fn build_index(doc_path: &str) -> Result<PageNodeRef, Box<dyn std::error::Error>> {
     println!("Parsing document...");
     let text = std::fs::read_to_string(doc_path)?;
+
+    // Use custom config for better quality
+    let config = IndexerConfig::builder()
+        .subsection_threshold(200)  // More granular splitting
+        .max_segment_tokens(4000)    // More context for segmentation
+        .summary_model("gpt-4")  // Stronger model for summaries
+        .max_summary_tokens(200)     // Longer summaries
+        .build();
+
     let llm = MockLlm;
-    let tree = parse_document(&llm, &text).await?;
+    let tree = parse_document_with_config(&llm, &text, &config).await?;
 
     println!("Building summaries (this makes LLM calls)...");
-    build_summaries(&llm, &tree).await?;
+    build_summaries_with_config(&llm, &tree, &config).await?;
+
+    let index_path = "index.json";
+    println!("Saving index to {}", index_path);
+    save(&tree, index_path)?;
+
+    Ok(tree)
+}
+
+/// Or build with default config
+async fn build_index_default(doc_path: &str) -> Result<PageNodeRef, Box<dyn std::error::Error>> {
+    println!("Parsing document with default config...");
+    let text = std::fs::read_to_string(doc_path)?;
+    let llm = MockLlm;
+    let tree = parse_document_with_config(&llm, &text, &IndexerConfig::default()).await?;
+
+    println!("Building summaries...");
+    build_summaries_with_config(&llm, &tree, &IndexerConfig::default()).await?;
 
     let index_path = "index.json";
     println!("Saving index to {}", index_path);
