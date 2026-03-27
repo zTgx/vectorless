@@ -15,7 +15,7 @@ categories = ["text-processing", "data-structures", "algorithms"]
 [features]
 default = ["std"]
 std = ["vectorless-core/std"]
-serde = ["vectorless-core/serde", "dep:serde"]
+serde = ["dep:serde"]
 
 [dependencies]
 vectorless-core = { path = "../core", default-features = false }

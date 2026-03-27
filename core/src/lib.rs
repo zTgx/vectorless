@@ -10,5 +10,9 @@
 #![warn(missing_docs, unreachable_pub, unused_crate_dependencies)]
 
 pub mod node;
+pub mod parse;
+pub mod index;
 
 pub use node::{PageNode, PageNodeRef};
+pub use parse::{parse_document, Error as ParseError, SUBSECTION_THRESHOLD};
+pub use index::{build_summaries, Error as IndexError};
