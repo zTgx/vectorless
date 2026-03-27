@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vectorless - RAG Without Vector Embeddings</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a25;
+            --text-primary: #e4e4e7;
+            --text-secondary: #a1a1aa;
+            --accent: #22d3ee;
+            --accent-hover: #06b6d4;
+            --border: #27272a;
+            --code-bg: #1e1e2e;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 12rem 0 6rem;
+            text-align: center;
+            background: radial-gradient(ellipse at top, rgba(34, 211, 238, 0.1) 0%, transparent 50%);
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--accent) 0%, #818cf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 2.5rem;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.875rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 5rem 0;
+        }
+
+        .features h2 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent) 0%, #818cf8 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+        }
+
+        /* How It Works */
+        .how-it-works {
+            padding: 5rem 0;
+            background: var(--bg-secondary);
+        }
+
+        .how-it-works h2 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .step {
+            text-align: center;
+            position: relative;
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: var(--accent);
+            color: var(--bg-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 auto 1.5rem;
+        }
+
+        .step h3 {
+            margin-bottom: 0.75rem;
+        }
+
+        .step p {
+            color: var(--text-secondary);
+        }
+
+        /* Code Section */
+        .code-section {
+            padding: 5rem 0;
+        }
+
+        .code-section h2 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            overflow-x: auto;
+        }
+
+        .code-block pre {
+            margin: 0;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .keyword { color: #c678dd; }
+        .string { color: #98c379; }
+        .function { color: #61afef; }
+        .comment { color: #5c6370; }
+        .type { color: #e5c07b; }
+
+        /* Comparison Section */
+        .comparison {
+            padding: 5rem 0;
+            background: var(--bg-secondary);
+        }
+
+        .comparison h2 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .comparison-table {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .comparison-col {
+            background: var(--bg-primary);
+            padding: 2rem;
+        }
+
+        .comparison-col.highlight {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--accent);
+        }
+
+        .comparison-col h3 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .comparison-col ul {
+            list-style: none;
+        }
+
+        .comparison-col li {
+            padding: 0.75rem 0;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .comparison-col.highlight li {
+            color: var(--text-primary);
+        }
+
+        /* Footer */
+        footer {
+            padding: 3rem 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        footer p {
+            color: var(--text-secondary);
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .comparison-table {
+                grid-template-columns: 1fr;
+            }
+
+            .comparison-col.highlight {
+                order: -1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="#" class="logo">vector<span>less</span></a>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#code">Code</a></li>
+                <li><a href="https://github.com/zTgx/vectorless" target="_blank">GitHub</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>RAG Without<br><span>Vector Embeddings</span></h1>
+            <p>Tree-based retrieval powered by LLM navigation. No embeddings, no vector database—just intelligent document understanding.</p>
+            <div class="cta-buttons">
+                <a href="https://github.com/zTgx/vectorless" class="btn btn-primary">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    Get Started
+                </a>
+                <a href="#how-it-works" class="btn btn-secondary">Learn More</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="features">
+        <div class="container">
+            <h2>Why Go Vectorless?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🌳</div>
+                    <h3>Tree-Based Indexing</h3>
+                    <p>Documents are organized as hierarchical trees with summaries at each node, enabling efficient traversal.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🧠</div>
+                    <h3>LLM Navigation</h3>
+                    <p>Let the LLM intelligently navigate document trees to find the most relevant content for any query.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💰</div>
+                    <h3>Cost Efficient</h3>
+                    <p>No vector database costs, no embedding generation fees—just compute when you need it.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🦀</div>
+                    <h3>Built in Rust</h3>
+                    <p>Blazing fast performance with memory safety, powered by the Rust ecosystem.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Precise Retrieval</h3>
+                    <p>Get contextually relevant excerpts instead of approximate nearest neighbors.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔌</div>
+                    <h3>Easy Integration</h3>
+                    <p>HTTP API and SDK support for seamless integration into your applications.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <h2>How It Works</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Parse Document</h3>
+                    <p>Documents are segmented into sections based on structure and content.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Build Tree</h3>
+                    <p>A hierarchical tree is created with summaries generated for each node.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Query & Navigate</h3>
+                    <p>The LLM navigates the tree to find the most relevant content for your query.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="code" class="code-section">
+        <div class="container">
+            <h2>Simple to Integrate</h2>
+            <div class="code-block">
+                <pre><code><span class="comment">// Add documents to your knowledge base</span>
+<span class="keyword">let</span> response = reqwest::Client::new()
+    .post(<span class="string">"http://localhost:8080/documents"</span>)
+    .json(&serde_json::json!({<span class="string">"title"</span>: <span class="string">"My Document"</span>}))
+    .send()
+    .<span class="keyword">await</span>?;
+
+<span class="keyword">let</span> doc: CreateDocumentResponse = response.json().<span class="keyword">await</span>?;
+
+<span class="comment">// Upload content for indexing</span>
+reqwest::Client::new()
+    .post(<span class="keyword">format!</span>(<span class="string">"http://localhost:8080/documents/{}/content"</span>, doc.id))
+    .json(&serde_json::json!({<span class="string">"content"</span>: document_content}))
+    .send()
+    .<span class="keyword">await</span>?;
+
+<span class="comment">// Query your knowledge base</span>
+<span class="keyword">let</span> response = reqwest::Client::new()
+    .post(<span class="string">"http://localhost:8080/query"</span>)
+    .json(&serde_json::json!({<span class="string">"query"</span>: <span class="string">"What is the main point?"</span>}))
+    .send()
+    .<span class="keyword">await</span>?;
+
+<span class="keyword">let</span> result: QueryResponse = response.json().<span class="keyword">await</span>?;
+println!(<span class="string">"Answer: {}"</span>, result.answer);</pre></code>
+            </div>
+        </div>
+    </section>
+
+    <section class="comparison">
+        <div class="container">
+            <h2>Vectorless vs Traditional RAG</h2>
+            <div class="comparison-table">
+                <div class="comparison-col">
+                    <h3>❌ Vector RAG</h3>
+                    <ul>
+                        <li>Requires embedding model</li>
+                        <li>Vector database costs</li>
+                        <li>Approximate results</li>
+                        <li>Complex infrastructure</li>
+                    </ul>
+                </div>
+                <div class="comparison-col highlight">
+                    <h3>✨ Vectorless</h3>
+                    <ul>
+                        <li>No embeddings needed</li>
+                        <li>Zero vector database</li>
+                        <li>Precise retrieval</li>
+                        <li>Simple deployment</li>
+                    </ul>
+                </div>
+                <div class="comparison-col">
+                    <h3>📄 Plain Search</h3>
+                    <ul>
+                        <li>No semantic understanding</li>
+                        <li>Keyword matching only</li>
+                        <li>Limited relevance</li>
+                        <li>No context awareness</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>Built with 🦀 Rust | <a href="https://github.com/zTgx/vectorless">GitHub</a> | <a href="https://vectorless.dev">vectorless.dev</a></p>
+        </div>
+    </footer>
+</body>
+</html>
