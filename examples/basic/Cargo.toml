@@ -6,4 +6,7 @@ edition = "2024"
 publish = false
 
 [dependencies]
-vectorless = { path = "../../sdk" }
+vectorless-core = { path = "../../core" }
+vectorless-llm = { path = "../../llm" }
+async-trait = { workspace = true }
+tokio = { workspace = true }

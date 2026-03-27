@@ -67,7 +67,10 @@ dependencies = [
 name = "basic-example"
 version = "0.1.0"
 dependencies = [
- "vectorless",
+ "async-trait",
+ "tokio",
+ "vectorless-core",
+ "vectorless-llm",
 ]
 
 [[package]]
