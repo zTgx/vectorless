@@ -46,18 +46,21 @@ The server will start on `http://localhost:8080`
 
 ```rust
 use vectorless_core::*;
-use vectorless_llm::zai::ZaiClient;
+use vectorless_llm::openai::OpenAIClient;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Initialize LLM client
-    let llm = ZaiClient::new("your-api-key");
+    // Initialize LLM client (OpenAI)
+    let llm = OpenAIClient::new("your-api-key");
+
+    // Or use ZAI
+    // let llm = vectorless_llm::zai::ZaiClient::new("your-api-key");
 
     // Configure indexer
     let config = IndexerConfig::builder()
         .subsection_threshold(200)
         .max_segment_tokens(4000)
-        .summary_model("glm-5")
+        .summary_model("gpt-4o")
         .max_summary_tokens(200)
         .build();
 
@@ -142,11 +145,21 @@ GET /health
 
 Configuration is done via environment variables:
 
+### LLM Provider
+
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `ZAI_API_KEY` | LLM API key | - |
-| `ZAI_ENDPOINT` | LLM endpoint | `https://api.z.ai/api/paas/v4` |
+| `OPENAI_API_KEY` | OpenAI API key | - |
+| `OPENAI_ENDPOINT` | OpenAI endpoint | `https://api.openai.com/v1` |
+| `OPENAI_MODEL` | Model name | `gpt-4o` |
+| `ZAI_API_KEY` | ZAI API key | - |
+| `ZAI_ENDPOINT` | ZAI endpoint | `https://api.z.ai/api/paas/v4` |
 | `ZAI_MODEL` | Model name | `glm-5` |
+
+### Server
+
+| Variable | Description | Default |
+|----------|-------------|---------|
 | `RAG_HOST` | Server host | `0.0.0.0` |
 | `RAG_PORT` | Server port | `8080` |
 | `RAG_DATA_DIR` | Data directory | `./data` |

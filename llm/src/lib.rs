@@ -42,5 +42,7 @@ pub mod chat;
 pub mod embedding;
 
 pub mod zai;
+pub mod openai;
 
 pub use zai::{ZaiClient, ZAI_API_BASE, ZAI_CODING_BASE};
+pub use openai::{OpenAIClient, OPENAI_API_BASE};
