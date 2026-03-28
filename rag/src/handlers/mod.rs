@@ -5,14 +5,16 @@
 
 use crate::models::{ApiError, CreateDocumentRequest, CreateDocumentResponse, Document, QueryRequest, QueryResponse, Source, UploadContentRequest};
 use crate::store::{IndexStore, MetadataStore};
-use crate::pipeline::{query::QueryPipeline, ingest::IngestPipeline};
 use axum::{
     extract::{Path, State},
     Json,
     response::IntoResponse,
 };
 use uuid::Uuid;
-use vectorless_llm::zai::ZaiClient;
+use vectorless_llm::{zai::ZaiClient, chat::{ChatModel, Message, Role, ChatOptions}};
+use vectorless_core::{parse::parse_document_with_config, index::build_summaries_with_config, storage::{save, load}, retriever::retrieve};
+use std::rc::Rc;
+use std::cell::RefCell;
 
 /// Application state.
 #[derive(Clone)]
@@ -36,7 +38,17 @@ pub async fn create_document(
     Ok(Json(response))
 }
 
-/// Upload document content.
+/// Helper function to count sections in a document tree.
+fn count_sections(root: &vectorless_core::node::PageNodeRef) -> usize {
+    let node = root.borrow();
+    let mut count = 1;
+    for child in &node.children {
+        count += count_sections(child);
+    }
+    count
+}
+
+/// Upload document content and index it.
 pub async fn upload_document_content(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
@@ -50,10 +62,11 @@ pub async fn upload_document_content(
         return Err(ApiError::InvalidRequest("No content provided".to_string()));
     }
 
-    // TODO: Implement ingestion
-    tracing::info!("Would ingest content for document {}", id);
+    // TODO: Implement indexing - async operations causing Handler trait issues
+    // For now, just log and return success
+    tracing::info!("Content received for document {}: {} bytes", id, req.content.len());
 
-    Ok(Json(serde_json::json!({"message": "Document indexed successfully"})))
+    Ok(Json(serde_json::json!({"message": "Content received (indexing: TODO)", "bytes": req.content.len()})))
 }
 
 /// Get document by ID.
@@ -95,14 +108,13 @@ pub async fn query(
     State(_state): State<AppState>,
     Json(req): Json<QueryRequest>,
 ) -> Result<Json<QueryResponse>, ApiError> {
-    // TODO: Implement query pipeline
-    tracing::info!("Would process query: {}", req.query);
+    // TODO: Implement query - async operations causing Handler trait issues
+    tracing::info!("Query received: {}", req.query);
 
-    let response = QueryResponse {
-        answer: "Query functionality coming soon".to_string(),
+    Ok(Json(QueryResponse {
+        answer: format!("Query functionality for '{}' coming soon", req.query),
         sources: vec![],
-    };
-    Ok(Json(response))
+    }))
 }
 
 /// Health check.

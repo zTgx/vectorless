@@ -14,6 +14,24 @@ name = "vectorless"
 path = "src/main.rs"
 
 [dependencies]
+# Internal crates
 vectorless-core = { path = "../core" }
+vectorless-llm = { path = "../llm" }
+vectorless-rag = { path = "../rag" }
 
-clap = { version = "4", features = ["derive"] }
+# CLI
+clap = { version = "4", features = ["derive", "env"] }
+
+# Async runtime
+tokio = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = "1.0"
+
+# Error handling
+anyhow = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }

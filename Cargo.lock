@@ -2105,8 +2105,16 @@ dependencies = [
 name = "vectorless-cli"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "clap",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
  "vectorless-core",
+ "vectorless-llm",
+ "vectorless-rag",
 ]
 
 [[package]]
