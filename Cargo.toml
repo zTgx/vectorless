@@ -9,6 +9,8 @@ members = [
     "sdk",
     "examples/basic",
     "examples/local-rag",
+    "examples/agent-rag",
+    "examples/service-client",
 ]
 
 [workspace.package]
