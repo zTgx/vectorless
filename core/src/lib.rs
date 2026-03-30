@@ -14,6 +14,7 @@ pub mod index;
 pub mod storage;
 pub mod retriever;
 pub mod config;
+pub mod markdown;
 
 pub use node::{PageNode, PageNodeRef};
 pub use parse::{parse_document, parse_document_with_config, Error as ParseError};
@@ -21,3 +22,11 @@ pub use index::{build_summaries, build_summaries_with_config, Error as IndexErro
 pub use storage::{save, load, Error as StorageError};
 pub use retriever::{retrieve, Error as RetrieverError};
 pub use config::{IndexerConfig, IndexerConfigBuilder};
+pub use markdown::{
+    parse_markdown,
+    parse_markdown_with_config,
+    MdConfig,
+    MdConfigBuilder,
+    MdParseResult,
+    Error as MdError,
+};

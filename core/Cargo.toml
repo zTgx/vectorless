@@ -14,3 +14,9 @@ serde = { workspace = true }
 serde_json = "1.0"
 thiserror = { workspace = true }
 vectorless-llm = { path = "../llm", default-features = false, features = ["chat"] }
+regex = "1.10"
+futures = "0.3"
+
+[dev-dependencies]
+async-trait = { workspace = true }
+tokio = { workspace = true }
