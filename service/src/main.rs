@@ -52,7 +52,7 @@ async fn main() -> anyhow::Result<()> {
     };
 
     // Start server
-    vectorless_service::run_server(state, &config.host, config.port).await
+    vectorless_service::run_server(state, &config.host, config.port, config.api_keys).await
 }
 
 /// Server configuration.
@@ -67,6 +67,7 @@ struct Config {
     subsection_threshold: usize,
     max_segment_tokens: usize,
     max_summary_tokens: u32,
+    api_keys: Vec<String>,
 }
 
 /// Load configuration from environment or defaults.
@@ -80,6 +81,13 @@ fn load_config() -> Result<Config, anyhow::Error> {
 
     let model = std::env::var("ZAI_MODEL")
         .unwrap_or_else(|_| "glm-5".to_string());
+
+    // Load API keys for service authentication
+    // SERVICE_API_KEYS should be comma-separated, e.g., "key1,key2,key3"
+    let api_keys = std::env::var("SERVICE_API_KEYS")
+        .ok()
+        .map(|keys| keys.split(',').map(|s| s.trim().to_string()).collect())
+        .unwrap_or_default();
 
     Ok(Config {
         host: std::env::var("SERVICE_HOST").unwrap_or_else(|_| "0.0.0.0".to_string()),
@@ -107,5 +115,6 @@ fn load_config() -> Result<Config, anyhow::Error> {
             .unwrap_or_else(|_| "200".to_string())
             .parse()
             .unwrap_or(200),
+        api_keys,
     })
 }

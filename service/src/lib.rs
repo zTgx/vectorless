@@ -12,9 +12,11 @@ pub mod dto;
 pub mod repository;
 pub mod service;
 pub mod controllers;
+pub mod middleware;
 pub mod server;
 
 pub use dto::{Document, DocumentStatus, QueryRequest, QueryResponse, ApiError};
 pub use repository::{MetadataRepository, IndexRepository};
 pub use service::{IngestService, QueryService, QueryResult};
+pub use middleware::{ApiKeyAuth, CorsConfig, request_logging, require_api_key};
 pub use server::run_server;

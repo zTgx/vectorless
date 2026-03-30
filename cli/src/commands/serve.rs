@@ -50,6 +50,10 @@ pub struct ServeArgs {
     /// Max summary tokens
     #[arg(long, env = "SERVICE_MAX_SUMMARY_TOKENS", default_value = "200")]
     max_summary_tokens: u32,
+
+    /// Service API keys (comma-separated)
+    #[arg(long, env = "SERVICE_API_KEYS", default_value = "")]
+    api_keys: String,
 }
 
 pub async fn run(args: ServeArgs) -> anyhow::Result<()> {
@@ -83,7 +87,15 @@ pub async fn run(args: ServeArgs) -> anyhow::Result<()> {
 
     // Start server
     tracing::info!("🚀 Starting vectorless service server...");
-    vectorless_service::run_server(state, &args.host, args.port).await?;
+
+    // Parse API keys
+    let api_keys: Vec<String> = if args.api_keys.is_empty() {
+        Vec::new()
+    } else {
+        args.api_keys.split(',').map(|s| s.trim().to_string()).collect()
+    };
+
+    vectorless_service::run_server(state, &args.host, args.port, api_keys).await?;
 
     Ok(())
 }
