@@ -1,0 +1,63 @@
+# Copyright (c) 2026 vectorless developers
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+# Dockerfile for vectorless service
+# Multi-stage build for minimal image size
+
+# Stage 1: Build
+FROM rust:1.85-slim as builder
+
+WORKDIR /build
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy workspace manifests
+COPY Cargo.toml Cargo.lock ./
+COPY core ./core
+COPY llm ./llm
+COPY service ./service
+
+# Build the service
+RUN cargo build --release --package vectorless-service && \
+    cp /build/target/release/vectorless-service /tmp/
+
+# Stage 2: Runtime
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/* && \
+    mkdir /data
+
+WORKDIR /app
+
+# Copy the binary from builder
+COPY --from=builder /tmp/vectorless-service /app/vectorless-service
+
+# Create non-root user
+RUN useradd -m -u 1000 vectorless && \
+    chown -R vectorless:vectorless /app /data
+
+USER vectorless
+
+# Expose default port
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+# Set default environment variables
+ENV SERVICE_HOST=0.0.0.0
+ENV SERVICE_PORT=8080
+ENV SERVICE_DATA_DIR=/data
+ENV SERVICE_INDEX_DIR=/data/indices
+
+# Run the service
+ENTRYPOINT ["/app/vectorless-service"]
+CMD ["serve"]

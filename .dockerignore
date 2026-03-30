@@ -1,0 +1,71 @@
+# Copyright (c) 2026 vectorless developers
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Build artifacts
+target/
+**/*.rs.bk
+*.pdb
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Docker
+docker/
+*.dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentation
+*.md
+!README.md
+docs/
+book/
+
+# Examples (not needed for service/cli images)
+examples/
+
+# Agent module (not needed for service/cli images)
+agent/
+
+# SDK (not needed for service/cli images)
+sdk/
+
+# Tests
+tests/
+**/*_test.rs
+ benches/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Environment files
+.env
+.env.*
+*.env
+
+# Data directories
+data/
+indices/
+workspace/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup

@@ -1,0 +1,50 @@
+# Copyright (c) 2026 vectorless developers
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+# Dockerfile for vectorless CLI
+# Multi-stage build for minimal image size
+
+# Stage 1: Build
+FROM rust:1.85-slim as builder
+
+WORKDIR /build
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy workspace manifests
+COPY Cargo.toml Cargo.lock ./
+COPY core ./core
+COPY llm ./llm
+COPY cli ./cli
+
+# Build the CLI
+RUN cargo build --release --package vectorless-cli && \
+    cp /build/target/release/vectorless /tmp/
+
+# Stage 2: Runtime
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    curl \
+    && rm -rf /var/lib/apt/lists/* && \
+    mkdir /workspace
+
+WORKDIR /workspace
+
+# Copy the binary from builder
+COPY --from=builder /tmp/vectorless /usr/local/bin/vectorless
+
+# Create non-root user
+RUN useradd -m -u 1000 vectorless && \
+    chown -R vectorless:vectorless /workspace
+
+USER vectorless
+
+# Set default entrypoint
+ENTRYPOINT ["vectorless"]

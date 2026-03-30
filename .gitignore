@@ -1,4 +1,180 @@
+# Copyright (c) 2026 vectorless developers
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+# ============================================
+# Rust / Cargo
+# ============================================
+
+# Build artifacts
 /target/
+**/*.rs.bk
+*.pdb
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+
+# Cargo lock file (uncomment if you want to exclude it)
+# Cargo.lock
+
+# Cargo workspace
+.cargo/config.toml
+.cargo/credentials
+
+# ============================================
+# IDE & Editor
+# ============================================
+
+# VSCode
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+/out/
+
+# Vim
+*.swp
+*.swo
+*~
+.*.sw*
+
+# Emacs
+*~
+\#*\#
+.\#*
+*.elc
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ============================================
+# Environment & Configuration
+# ============================================
+
+# Environment files
+.env
+.env.*
+!.env.example
 .config.toml
-index.json
+
+# Secrets
+*_secret.*
+*.key
+*.pem
+!Cargo.toml
+
+# ============================================
+# Data & Storage
+# ============================================
+
+# Application data
 /data/
+/indices/
+/workspace/
+/data/
+/db/
+*.db
+*.db-shm
+*.db-wal
+
+# Generated index files
+index.json
+*.index
+
+# ============================================
+# Logs & Debug
+# ============================================
+
+*.log
+logs/
+/log/
+
+# Tracing
+trace-*.log
+
+# ============================================
+# Testing & Coverage
+# ============================================
+
+# Test coverage
+tarpaulin-report.html
+cobertura.xml
+lcov.info
+*.profdata
+*.profraw
+
+# Benchmark results
+benchmarks/
+
+# ============================================
+# Documentation
+# ============================================
+
+# Generated docs
+/doc/
+/docs/book/book/
+
+# ============================================
+# Docker
+# ============================================
+
+.dockerenv
+docker-compose.override.yml
+
+# ============================================
+# OS Specific
+# ============================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+.Icon
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+.nfs*
+.directory
+
+# ============================================
+# Temporary Files
+# ============================================
+
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.cache
+.cache/
+
+# ============================================
+# Claude Code
+# ============================================
+
+.claude/

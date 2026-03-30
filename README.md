@@ -42,6 +42,22 @@ cargo run -p vectorless-rag
 
 The server will start on `http://localhost:8080`
 
+### Docker Deployment
+
+```bash
+# Build and start with Docker Compose
+docker compose -f docker/docker-compose.yml up -d
+
+# Set environment variables
+cat > .env << EOF
+ZAI_API_KEY=your-api-key
+ZAI_ENDPOINT=https://api.z.ai/api/paas/v4
+ZAI_MODEL=glm-5
+EOF
+```
+
+See [docker/README.md](docker/README.md) for detailed deployment instructions.
+
 ### Basic Usage
 
 ```rust

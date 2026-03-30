@@ -1,0 +1,82 @@
+# Copyright (c) 2026 vectorless developers
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+version: "3.8"
+
+services:
+  # Vectorless Service
+  vectorless:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.service
+    container_name: vectorless-service
+    ports:
+      - "8080:8080"
+    environment:
+      # LLM Configuration
+      ZAI_API_KEY: ${ZAI_API_KEY:-}
+      ZAI_ENDPOINT: ${ZAI_ENDPOINT:-https://api.z.ai/api/paas/v4}
+      ZAI_MODEL: ${ZAI_MODEL:-glm-5}
+
+      # Service Configuration
+      SERVICE_HOST: 0.0.0.0
+      SERVICE_PORT: 8080
+      SERVICE_DATA_DIR: /data
+      SERVICE_INDEX_DIR: /data/indices
+
+      # Indexer Configuration
+      SERVICE_SUBSECTION_THRESHOLD: ${SERVICE_SUBSECTION_THRESHOLD:-200}
+      SERVICE_MAX_SEGMENT_TOKENS: ${SERVICE_MAX_SEGMENT_TOKENS:-4000}
+      SERVICE_MAX_SUMMARY_TOKENS: ${SERVICE_MAX_SUMMARY_TOKENS:-200}
+
+      # API Authentication (comma-separated keys, empty = disabled)
+      SERVICE_API_KEYS: ${SERVICE_API_KEYS:-}
+
+      # Logging
+      RUST_LOG: ${RUST_LOG:-info}
+    volumes:
+      # Persist data between restarts
+      - vectorless-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - vectorless-network
+
+  # Vectorless CLI (for ad-hoc operations)
+  vectorless-cli:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.cli
+    container_name: vectorless-cli
+    environment:
+      # LLM Configuration (same as service)
+      ZAI_API_KEY: ${ZAI_API_KEY:-}
+      ZAI_ENDPOINT: ${ZAI_ENDPOINT:-https://api.z.ai/api/paas/v4}
+      ZAI_MODEL: ${ZAI_MODEL:-glm-5}
+      RUST_LOG: ${RUST_LOG:-info}
+    volumes:
+      # Share data with service
+      - vectorless-data:/data
+      # Mount local directory for input/output files
+      - ./workspace:/workspace
+    working_dir: /workspace
+    depends_on:
+      vectorless:
+        condition: service_healthy
+    networks:
+      - vectorless-network
+    profiles:
+      - cli  # Only start with: docker compose --profile cli up
+
+volumes:
+  vectorless-data:
+    driver: local
+
+networks:
+  vectorless-network:
+    driver: bridge
