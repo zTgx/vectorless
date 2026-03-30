@@ -256,7 +256,7 @@ impl PdfExtractor {
     ///
     /// Internal method that uses pdf-extract library.
     fn extract_from_path(&self, path: &Path) -> Result<Vec<String>, Error> {
-        let path_str = path.to_str().ok_or_else(|| Error::InvalidPath)?;
+        let _path_str = path.to_str().ok_or_else(|| Error::InvalidPath)?;
         let data = std::fs::read(path).map_err(|e| Error::IoError(e.to_string()))?;
 
         self.extract_from_data(&data)

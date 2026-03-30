@@ -16,6 +16,7 @@ pub mod retriever;
 pub mod config;
 pub mod markdown;
 pub mod pdf;
+pub mod toc;
 
 pub use node::{PageNode, PageNodeRef};
 pub use parse::{parse_document, parse_document_with_config, Error as ParseError};
@@ -41,4 +42,12 @@ pub use pdf::{
     mark_page_boundaries,
     parse_page_spec,
     Error as PdfError,
+};
+pub use toc::{
+    TocEntry,
+    TocResult,
+    TocProcessor,
+    TocConfig,
+    TocConfigBuilder,
+    Error as TocError,
 };
