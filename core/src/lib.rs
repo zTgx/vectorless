@@ -15,6 +15,7 @@ pub mod storage;
 pub mod retriever;
 pub mod config;
 pub mod markdown;
+pub mod pdf;
 
 pub use node::{PageNode, PageNodeRef};
 pub use parse::{parse_document, parse_document_with_config, Error as ParseError};
@@ -29,4 +30,15 @@ pub use markdown::{
     MdConfigBuilder,
     MdParseResult,
     Error as MdError,
+};
+pub use pdf::{
+    Page,
+    PdfDocument,
+    PdfParser,
+    PdfExtractor,
+    TokenStrategy,
+    estimate_tokens,
+    mark_page_boundaries,
+    parse_page_spec,
+    Error as PdfError,
 };
