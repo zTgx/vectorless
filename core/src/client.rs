@@ -340,6 +340,9 @@ impl DocumentCollection {
                 file_path: entry.path,
                 page_count: entry.page_count,
                 line_count: entry.line_count,
+                status: crate::document::DocumentStatus::Completed,
+                created_at: None,  // Will be loaded from full doc on demand
+                modified_at: None,
                 root: None,  // Will be lazy-loaded
                 pages: None, // Will be lazy-loaded
             };
@@ -371,6 +374,7 @@ impl DocumentCollection {
 
         // Create document with placeholder structure
         // In full implementation, this would call PDF parsing and TOC detection
+        let now = chrono::Utc::now().to_rfc3339();
         let doc = Document {
             id: doc_id.clone(),
             doc_type: DocumentType::Pdf,
@@ -382,6 +386,9 @@ impl DocumentCollection {
             file_path: file_path.to_path_buf(),
             page_count: None,  // Would be extracted from PDF
             line_count: None,
+            status: crate::document::DocumentStatus::Completed,
+            created_at: Some(now.clone()),
+            modified_at: Some(now),
             root: None,        // Would be built from TOC
             pages: None,       // Would be extracted pages
         };
@@ -409,6 +416,7 @@ impl DocumentCollection {
         let doc_description = format!("Markdown document with {} lines", line_count);
 
         // Create document
+        let now = chrono::Utc::now().to_rfc3339();
         let doc = Document {
             id: doc_id.clone(),
             doc_type: DocumentType::Markdown,
@@ -420,6 +428,9 @@ impl DocumentCollection {
             file_path: file_path.to_path_buf(),
             page_count: None,
             line_count: Some(line_count),
+            status: crate::document::DocumentStatus::Completed,
+            created_at: Some(now.clone()),
+            modified_at: Some(now),
             root: None,  // Would be built from markdown parser
             pages: None,
         };
@@ -749,6 +760,9 @@ mod tests {
             file_path: PathBuf::from("/test/Test.pdf"),
             page_count: Some(10),
             line_count: None,
+            status: crate::document::DocumentStatus::Completed,
+            created_at: Some("2024-01-01T00:00:00Z".to_string()),
+            modified_at: Some("2024-01-01T00:00:00Z".to_string()),
             root: None,
             pages: None,
         };

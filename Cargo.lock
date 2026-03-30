@@ -2394,6 +2394,7 @@ name = "vectorless-core"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "chrono",
  "futures",
  "pdf-extract",
  "regex",

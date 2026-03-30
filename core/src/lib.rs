@@ -79,6 +79,7 @@ pub use retrieve::{
 pub use document::{
     Document,
     DocumentType,
+    DocumentStatus,
     DocumentSummary,
     CachedPage,
     StructureNodeDto,

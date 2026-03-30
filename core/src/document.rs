@@ -48,6 +48,50 @@ pub enum DocumentType {
     Markdown,
 }
 
+/// Document processing status.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+pub enum DocumentStatus {
+    /// Document is being processed.
+    #[serde(rename = "pending")]
+    Pending,
+
+    /// Document processing completed successfully.
+    #[serde(rename = "completed")]
+    #[default]
+    Completed,
+
+    /// Document processing failed.
+    #[serde(rename = "failed")]
+    Failed,
+
+    /// Document is being indexed.
+    #[serde(rename = "indexing")]
+    Indexing,
+}
+
+impl DocumentStatus {
+    /// Convert status to string for JSON serialization.
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            DocumentStatus::Pending => "pending",
+            DocumentStatus::Completed => "completed",
+            DocumentStatus::Failed => "failed",
+            DocumentStatus::Indexing => "indexing",
+        }
+    }
+
+    /// Create status from string.
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s {
+            "pending" => Some(DocumentStatus::Pending),
+            "completed" => Some(DocumentStatus::Completed),
+            "failed" => Some(DocumentStatus::Failed),
+            "indexing" => Some(DocumentStatus::Indexing),
+            _ => None,
+        }
+    }
+}
+
 /// Document metadata and content.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Document {
@@ -74,6 +118,18 @@ pub struct Document {
     /// Total line count (for Markdown documents).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub line_count: Option<usize>,
+
+    /// Document processing status.
+    #[serde(default)]
+    pub status: DocumentStatus,
+
+    /// When the document was created (ISO 8601 timestamp).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<String>,
+
+    /// When the document was last modified (ISO 8601 timestamp).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub modified_at: Option<String>,
 
     /// Document tree structure (lazy-loaded, may be None).
     /// Note: This field is skipped during serialization/deserialization
@@ -180,6 +236,14 @@ pub struct DocumentMetadata {
     /// Line count (for Markdown).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub line_count: Option<usize>,
+
+    /// When the document was created (ISO 8601 timestamp).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<String>,
+
+    /// When the document was last modified (ISO 8601 timestamp).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub modified_at: Option<String>,
 }
 
 /// Error response wrapper.
@@ -298,14 +362,18 @@ pub fn get_document(documents: &HashMap<String, Document>, doc_id: &str) -> Stri
                 DocumentType::Markdown => "markdown",
             };
 
+            let status_str = doc.status.as_str().to_string();
+
             let metadata = DocumentMetadata {
                 doc_id: doc_id.to_string(),
                 doc_name: doc.doc_name.clone(),
                 doc_description: doc.doc_description.clone(),
                 doc_type: doc_type_str.to_string(),
-                status: "completed".to_string(),
+                status: status_str,
                 page_count: doc.page_count,
                 line_count: doc.line_count,
+                created_at: doc.created_at.clone(),
+                modified_at: doc.modified_at.clone(),
             };
 
             serde_json::to_string(&metadata).unwrap_or_else(|_| {
@@ -643,6 +711,9 @@ mod tests {
             file_path: PathBuf::from("/test/doc.pdf"),
             page_count: Some(10),
             line_count: None,
+            status: DocumentStatus::Completed,
+            created_at: Some("2024-01-01T00:00:00Z".to_string()),
+            modified_at: Some("2024-01-01T00:00:00Z".to_string()),
             root: None,
             pages: None,
         };
@@ -675,6 +746,9 @@ mod tests {
             file_path: PathBuf::from("/test/doc2.pdf"),
             page_count: None,
             line_count: None,
+            status: DocumentStatus::Completed,
+            created_at: Some("2024-01-01T00:00:00Z".to_string()),
+            modified_at: Some("2024-01-01T00:00:00Z".to_string()),
             root: None,
             pages: None,
         };
@@ -705,6 +779,9 @@ mod tests {
             file_path: PathBuf::from("/test/doc3.pdf"),
             page_count: Some(10),
             line_count: None,
+            status: DocumentStatus::Completed,
+            created_at: Some("2024-01-01T00:00:00Z".to_string()),
+            modified_at: Some("2024-01-01T00:00:00Z".to_string()),
             root: Some(root.clone()),
             pages: None,
         };
@@ -743,6 +820,9 @@ mod tests {
             file_path: PathBuf::from("/test/doc4.pdf"),
             page_count: None,
             line_count: None,
+            status: DocumentStatus::Completed,
+            created_at: Some("2024-01-01T00:00:00Z".to_string()),
+            modified_at: Some("2024-01-01T00:00:00Z".to_string()),
             root: None,
             pages: None,
         };
@@ -781,6 +861,9 @@ mod tests {
             file_path: PathBuf::from("/test/doc5.pdf"),
             page_count: Some(3),
             line_count: None,
+            status: DocumentStatus::Completed,
+            created_at: Some("2024-01-01T00:00:00Z".to_string()),
+            modified_at: Some("2024-01-01T00:00:00Z".to_string()),
             root: None,
             pages: Some(pages),
         };
