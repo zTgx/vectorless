@@ -6,7 +6,7 @@ members = [
     "agent",
     "service",
     "cli",
-    "sdk",
+    "sdk/rust",
     "examples/basic",
     "examples/local-rag",
     "examples/agent-rag",
