@@ -18,12 +18,13 @@ pub mod markdown;
 pub mod pdf;
 pub mod toc;
 pub mod tree_builder;
+pub mod retrieve;
 
 pub use node::{PageNode, PageNodeRef, PageNodeRefExt};
 pub use parse::{parse_document, parse_document_with_config, Error as ParseError};
 pub use index::{build_summaries, build_summaries_with_config, Error as IndexError};
 pub use storage::{save, load, Error as StorageError};
-pub use retriever::{retrieve, Error as RetrieverError};
+pub use retriever::{retrieve as retrieve_simple, Error as RetrieverError};
 pub use config::{IndexerConfig, IndexerConfigBuilder};
 pub use markdown::{
     parse_markdown,
@@ -62,4 +63,14 @@ pub use tree_builder::{
     get_path_to_node,
     validate_page_boundaries,
     ValidationError,
+};
+pub use retrieve::{
+    RetrieveMode,
+    RetrieveResult,
+    RetrievedSection,
+    PathStep,
+    RetrieveMetadata,
+    retrieve_with_mode,
+    retrieve,
+    Error as RetrieveError,
 };

@@ -7,7 +7,7 @@
 //! from table of contents entries, incorporating page boundary information
 //! following the PageIndex approach.
 
-use crate::node::{PageNode, PageNodeRef, PageNodeRefExt};
+use crate::node::{PageNode, PageNodeRef};
 use crate::toc::TocEntry;
 use crate::pdf::Page;
 
