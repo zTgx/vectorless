@@ -19,6 +19,8 @@ pub mod pdf;
 pub mod toc;
 pub mod tree_builder;
 pub mod retrieve;
+pub mod document;
+pub mod client;
 
 pub use node::{PageNode, PageNodeRef, PageNodeRefExt};
 pub use parse::{parse_document, parse_document_with_config, Error as ParseError};
@@ -73,4 +75,24 @@ pub use retrieve::{
     retrieve_with_mode,
     retrieve,
     Error as RetrieveError,
+};
+pub use document::{
+    Document,
+    DocumentType,
+    DocumentSummary,
+    CachedPage,
+    StructureNodeDto,
+    DocumentMetadata,
+    parse_page_range,
+    get_document,
+    get_document_structure,
+    get_page_content,
+    to_structure_dto,
+    Error as DocumentError,
+};
+pub use client::{
+    DocumentCollection,
+    IndexMode,
+    MetaEntry,
+    Error as ClientError,
 };
