@@ -8,6 +8,7 @@ members = [
     "cli",
     "sdk",
     "examples/basic",
+    "examples/local-rag",
 ]
 
 [workspace.package]
