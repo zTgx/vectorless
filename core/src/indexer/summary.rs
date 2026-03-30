@@ -3,8 +3,8 @@
 
 //! Index builder: traverse tree and build summaries.
 
-use crate::config::IndexerConfig;
 use crate::node::PageNodeRef;
+use super::config::IndexerConfig;
 use vectorless_llm::chat::{ChatModel, Message, Role, ChatOptions};
 
 /// Build summaries for all nodes in the tree with custom config.

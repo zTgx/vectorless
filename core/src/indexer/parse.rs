@@ -3,8 +3,8 @@
 
 //! Document parsing for building the index tree.
 
-use crate::config::IndexerConfig;
 use crate::node::{PageNode, PageNodeRef};
+use super::config::IndexerConfig;
 use serde::{Deserialize, Serialize};
 use vectorless_llm::chat::{ChatModel, Message, Role, ChatOptions};
 

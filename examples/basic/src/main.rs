@@ -5,9 +5,10 @@
 
 use std::path::Path;
 use vectorless_core::{
-    build_summaries_with_config, load, parse_document_with_config, retrieve, save,
+    build_summaries_with_config, load, parse_document_with_config, save,
     IndexerConfig, PageNodeRef,
 };
+use vectorless_core::retriever::retrieve_simple;
 use vectorless_llm::chat::ChatModel;
 use vectorless_llm::zai::ZaiClient;
 use serde::Deserialize;
@@ -121,7 +122,7 @@ async fn ask(
 
     let tree = load(index_path)?;
     let llm = ZaiClient::with_endpoint(api_key, endpoint);
-    let context = retrieve(&llm, query, &tree).await?;
+    let context = retrieve_simple(&llm, query, &tree).await?;
 
     let messages = vec![
         vectorless_llm::chat::Message {

@@ -3,7 +3,7 @@
 
 //! Integration tests for Markdown parsing.
 
-use vectorless_core::markdown::{parse_markdown_with_config, MdConfig};
+use vectorless_core::indexer::markdown::{parse_markdown_with_config, MdConfig};
 
 // Mock LLM for testing
 struct MockLlm;

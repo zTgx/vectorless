@@ -17,8 +17,8 @@
 //! # Usage
 //!
 //! ```no_run
-//! use vectorless_core::toc::{TocProcessor, TocConfig};
-//! use vectorless_core::pdf::Page;
+//! use vectorless_core::indexer::toc::{TocProcessor, TocConfig};
+//! use vectorless_core::indexer::pdf::Page;
 //!
 //! # async fn example<M: vectorless_llm::chat::ChatModel>(llm: M, pages: Vec<Page>) -> Result<(), Box<dyn std::error::Error>> {
 //! let config = TocConfig::default();
@@ -33,7 +33,7 @@
 //! # }
 //! ```
 
-use crate::pdf::Page;
+use super::pdf::Page;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use vectorless_llm::chat::{ChatModel, Message, Role, ChatOptions};

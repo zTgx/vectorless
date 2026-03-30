@@ -6,7 +6,7 @@
 use crate::dto::{ApiError, DocumentStatus};
 use crate::repository::{IndexRepository, MetadataRepository};
 use uuid::Uuid;
-use vectorless_core::{parse::parse_document_with_config, index::build_summaries_with_config, storage::save, IndexerConfig};
+use vectorless_core::{parse_document_with_config, build_summaries_with_config, save, IndexerConfig};
 use vectorless_llm::chat::ChatModel;
 
 /// Document ingestion service.

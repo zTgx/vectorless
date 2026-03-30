@@ -5,7 +5,8 @@
 
 use clap::Parser;
 use std::path::PathBuf;
-use vectorless_core::{storage::load, retriever::retrieve};
+use vectorless_core::load;
+use vectorless_core::retriever::retrieve_simple;
 use vectorless_llm::zai::ZaiClient;
 
 /// Query a document index
@@ -44,7 +45,7 @@ pub async fn run(args: QueryArgs) -> anyhow::Result<()> {
 
     // Query
     tracing::info!("Querying: {}", args.query);
-    let result = retrieve(&llm, &args.query, &root)
+    let result = retrieve_simple(&llm, &args.query, &root)
         .await
         .map_err(|e| anyhow::anyhow!("Query failed: {}", e))?;
 

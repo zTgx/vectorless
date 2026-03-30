@@ -9,7 +9,7 @@
 //! # Example
 //!
 //! ```no_run
-//! use vectorless_core::pdf::{PdfExtractor, PdfParser};
+//! use vectorless_core::indexer::pdf::{PdfExtractor, PdfParser};
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! let extractor = PdfExtractor::default();
@@ -111,7 +111,7 @@ impl PdfDocument {
     /// Get pages 5 through 10 from a document:
     ///
     /// ```no_run
-    /// # use vectorless_core::pdf::{PdfExtractor, PdfParser};
+    /// # use vectorless_core::indexer::pdf::{PdfExtractor, PdfParser};
     /// # let extractor = PdfExtractor::new();
     /// # let doc = extractor.parse("document.pdf").unwrap();
     /// if let Some(text) = doc.get_page_range(5, 10) {
@@ -345,7 +345,7 @@ pub fn estimate_tokens(text: &str) -> usize {
 /// # Example
 ///
 /// ```
-/// use vectorless_core::pdf::mark_page_boundaries;
+/// use vectorless_core::indexer::pdf::mark_page_boundaries;
 ///
 /// let pages = vec![
 ///     ("First page content".to_string()),
@@ -382,7 +382,7 @@ pub fn mark_page_boundaries(pages: &[String]) -> String {
 /// # Example
 ///
 /// ```
-/// use vectorless_core::pdf::parse_page_spec;
+/// use vectorless_core::indexer::pdf::parse_page_spec;
 ///
 /// let pages = parse_page_spec("3,5-7,10").unwrap();
 /// assert_eq!(pages, vec![3, 5, 6, 7, 10]);

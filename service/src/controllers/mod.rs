@@ -12,7 +12,8 @@ use axum::{
 };
 use uuid::Uuid;
 use vectorless_llm::{zai::ZaiClient, chat::{ChatModel, Message, Role, ChatOptions}};
-use vectorless_core::{parse::parse_document_with_config, index::build_summaries_with_config, storage::{save, load}, retriever::retrieve};
+use vectorless_core::{parse_document_with_config, build_summaries_with_config, save, load};
+use vectorless_core::retriever::retrieve_simple;
 use std::rc::Rc;
 use std::cell::RefCell;
 

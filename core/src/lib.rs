@@ -8,54 +8,66 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(missing_docs, unreachable_pub, unused_crate_dependencies)]
 
+// ============================================================
+// Core Modules
+// ============================================================
+
 pub mod node;
-pub mod parse;
-pub mod index;
-pub mod storage;
+pub mod indexer;
 pub mod retriever;
-pub mod config;
-pub mod markdown;
-pub mod pdf;
-pub mod toc;
-pub mod tree_builder;
-pub mod retrieve;
+pub mod storage;
 pub mod document;
 pub mod client;
 
+// ============================================================
+// Re-exports - Node
+// ============================================================
+
 pub use node::{PageNode, PageNodeRef, PageNodeRefExt};
-pub use parse::{parse_document, parse_document_with_config, Error as ParseError};
-pub use index::{build_summaries, build_summaries_with_config, Error as IndexError};
-pub use storage::{save, load, Error as StorageError};
-pub use retriever::{retrieve as retrieve_simple, Error as RetrieverError};
-pub use config::{IndexerConfig, IndexerConfigBuilder};
-pub use markdown::{
+
+// ============================================================
+// Re-exports - Indexer
+// ============================================================
+
+pub use indexer::{
+    // Config
+    IndexerConfig,
+    IndexerConfigBuilder,
+    // Parse
+    parse_document,
+    parse_document_with_config,
+    // PDF
+    Page,
+    PdfDocument,
+    PdfExtractor,
+    PdfParser,
+    TokenStrategy,
+    estimate_tokens,
+    mark_page_boundaries,
+    parse_page_spec,
+    // Markdown
     parse_markdown,
     parse_markdown_with_config,
     MdConfig,
     MdConfigBuilder,
     MdParseResult,
-    Error as MdError,
-};
-pub use pdf::{
-    Page,
-    PdfDocument,
-    PdfParser,
-    PdfExtractor,
-    TokenStrategy,
-    estimate_tokens,
-    mark_page_boundaries,
-    parse_page_spec,
-    Error as PdfError,
-};
-pub use toc::{
+    // TOC
     TocEntry,
     TocResult,
     TocProcessor,
     TocConfig,
     TocConfigBuilder,
-    Error as TocError,
+    // Summary
+    build_summaries,
+    build_summaries_with_config,
 };
-pub use tree_builder::{
+
+// ============================================================
+// Re-exports - Retriever
+// ============================================================
+
+pub use retriever::{
+    // Tree
     TreeBuilder,
     extract_page_number,
     extract_page_range,
@@ -65,17 +77,32 @@ pub use tree_builder::{
     get_path_to_node,
     validate_page_boundaries,
     ValidationError,
-};
-pub use retrieve::{
+    // Navigate
+    retrieve as retrieve_simple,
+    // Retrieve
     RetrieveMode,
     RetrieveResult,
     RetrievedSection,
     PathStep,
     RetrieveMetadata,
     retrieve_with_mode,
-    retrieve,
-    Error as RetrieveError,
 };
+
+// ============================================================
+// Re-exports - Storage
+// ============================================================
+
+pub use storage::{
+    save,
+    load,
+    Workspace,
+    DocumentCache,
+};
+
+// ============================================================
+// Re-exports - Document
+// ============================================================
+
 pub use document::{
     Document,
     DocumentType,
@@ -84,16 +111,36 @@ pub use document::{
     CachedPage,
     StructureNodeDto,
     DocumentMetadata,
+    MetaEntry,
     parse_page_range,
     get_document,
     get_document_structure,
     get_page_content,
     to_structure_dto,
-    Error as DocumentError,
 };
+
+// ============================================================
+// Re-exports - Client
+// ============================================================
+
 pub use client::{
     DocumentCollection,
     IndexMode,
-    MetaEntry,
-    Error as ClientError,
 };
+
+// ============================================================
+// Error Types
+// ============================================================
+
+pub use indexer::ParseError;
+pub use indexer::PdfError;
+pub use indexer::MdError;
+pub use indexer::TocError;
+pub use indexer::IndexError;
+pub use retriever::RetrieverError;
+pub use retriever::RetrieveError;
+pub use storage::StorageError;
+pub use storage::WorkspaceError;
+pub use storage::CacheError;
+pub use document::DocumentError;
+pub use client::ClientError;

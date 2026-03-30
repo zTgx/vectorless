@@ -5,7 +5,7 @@
 
 use clap::Parser;
 use std::path::PathBuf;
-use vectorless_core::{IndexerConfig, parse::parse_document_with_config, index::build_summaries_with_config, storage::save};
+use vectorless_core::{IndexerConfig, parse_document_with_config, build_summaries_with_config, save};
 use vectorless_llm::zai::ZaiClient;
 
 /// Index a document file

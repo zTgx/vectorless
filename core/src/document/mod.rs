@@ -253,6 +253,37 @@ pub struct ErrorResponse {
     pub error: String,
 }
 
+/// Metadata entry for _meta.json (lightweight, no structure/pages).
+///
+/// This represents the minimal information stored in the workspace registry
+/// to enable quick lookups without loading full document content.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MetaEntry {
+    /// Document ID.
+    pub id: String,
+
+    /// Document type ("pdf" or "markdown").
+    #[serde(rename = "type")]
+    pub doc_type: String,
+
+    /// Document name (filename).
+    pub doc_name: String,
+
+    /// Document description (LLM-generated).
+    pub doc_description: String,
+
+    /// Absolute path to the document file.
+    pub path: PathBuf,
+
+    /// Page count (for PDF documents).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub page_count: Option<usize>,
+
+    /// Line count (for Markdown documents).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub line_count: Option<usize>,
+}
+
 // ============================================================
 // Page Range Parsing
 // ============================================================
@@ -627,6 +658,9 @@ pub enum Error {
     #[error("JSON error: {0}")]
     Json(#[from] serde_json::Error),
 }
+
+/// Document API error type alias for consistency.
+pub type DocumentError = Error;
 
 // ============================================================
 // Tests

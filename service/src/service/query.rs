@@ -5,8 +5,11 @@
 
 use crate::dto::{ApiError, Source, DocumentStatus};
 use crate::repository::{IndexRepository, MetadataRepository};
-use vectorless_core::{retriever::retrieve, storage::load};
+use vectorless_core::load;
 use vectorless_llm::chat::ChatModel;
+
+// Import retrieve function with explicit path to avoid naming conflicts
+use vectorless_core::retriever::retrieve_simple;
 
 /// Query service for RAG.
 pub struct QueryService<M> {
@@ -85,7 +88,7 @@ impl<M: ChatModel> QueryService<M> {
             .map_err(|e| ApiError::Storage(format!("Failed to load index: {}", e)))?;
 
         // Retrieve relevant content
-        let content = retrieve(&self.llm, query, &root)
+        let content = retrieve_simple(&self.llm, query, &root)
             .await
             .map_err(|e| ApiError::Query(format!("Retrieval failed: {}", e)))?;
 

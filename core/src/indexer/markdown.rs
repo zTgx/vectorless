@@ -9,7 +9,7 @@
 //! # Example
 //!
 //! ```no_run
-//! use vectorless_core::markdown::{parse_markdown_with_config, MdConfig};
+//! use vectorless_core::indexer::markdown::{parse_markdown_with_config, MdConfig};
 //! use vectorless_llm::openai::OpenAIClient;
 //!
 //! # #[tokio::main]
