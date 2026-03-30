@@ -1,23 +1,23 @@
 // Copyright (c) 2026 vectorless developers
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-//! Metadata storage using sled.
+//! Metadata repository for storing document metadata.
 
-use crate::models::{ApiError, Document, DocumentStatus};
+use crate::dto::{ApiError, Document, DocumentStatus};
 use sled::Db;
 use uuid::Uuid;
 
-/// Metadata store for documents.
+/// Metadata repository for documents.
 #[derive(Clone)]
-pub struct MetadataStore {
+pub struct MetadataRepository {
     db: Db,
 }
 
-impl MetadataStore {
-    /// Open or create the metadata store.
+impl MetadataRepository {
+    /// Open or create the metadata repository.
     pub fn open(path: impl AsRef<std::path::Path>) -> Result<Self, ApiError> {
         let db = sled::open(path)
-            .map_err(|e| ApiError::Storage(format!("Failed to open store: {}", e)))?;
+            .map_err(|e| ApiError::Storage(format!("Failed to open repository: {}", e)))?;
         Ok(Self { db })
     }
 

@@ -1,20 +1,20 @@
 // Copyright (c) 2026 vectorless developers
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-//! Index file storage.
+//! Index repository for managing index files.
 
-use crate::models::ApiError;
+use crate::dto::ApiError;
 use std::path::{Path, PathBuf};
 use uuid::Uuid;
 
-/// Index store for managing index files.
+/// Index repository for managing index files.
 #[derive(Clone)]
-pub struct IndexStore {
+pub struct IndexRepository {
     base_dir: PathBuf,
 }
 
-impl IndexStore {
-    /// Create a new index store.
+impl IndexRepository {
+    /// Create a new index repository.
     pub fn new(base_dir: impl AsRef<Path>) -> Self {
         Self {
             base_dir: base_dir.as_ref().to_path_buf(),

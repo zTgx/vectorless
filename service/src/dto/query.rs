@@ -1,7 +1,7 @@
 // Copyright (c) 2026 vectorless developers
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-//! Query model.
+//! Query DTOs.
 
 use serde::{Deserialize, Serialize};
 

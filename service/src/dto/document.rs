@@ -1,7 +1,7 @@
 // Copyright (c) 2026 vectorless developers
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-//! Document model.
+//! Document DTOs.
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;

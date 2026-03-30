@@ -1,12 +1,12 @@
 [package]
-name = "vectorless-rag"
+name = "vectorless-service"
 version = "0.1.0"
 edition = "2024"
 
 authors = ["zTgx <beautifularea@gmail.com>"]
-description = "RAG service for vectorless - HTTP server"
+description = "HTTP service layer for vectorless - provides REST API for document indexing and RAG"
 license = "MIT OR Apache-2.0"
-keywords = ["rag", "server", "http"]
+keywords = ["rag", "service", "http", "api"]
 categories = ["web-programming", "api-bindings"]
 
 [dependencies]

@@ -1,7 +1,7 @@
 // Copyright (c) 2026 vectorless developers
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-//! vectorless RAG service
+//! vectorless HTTP service
 
 use std::path::PathBuf;
 use vectorless_llm::zai::ZaiClient;
@@ -20,17 +20,17 @@ async fn main() -> anyhow::Result<()> {
     // Load configuration
     let config = load_config()?;
 
-    tracing::info!("Starting RAG service...");
+    tracing::info!("Starting vectorless service...");
     tracing::info!("Data directory: {}", config.data_dir.display());
 
     // Create directories
     std::fs::create_dir_all(&config.data_dir)?;
     std::fs::create_dir_all(&config.index_dir)?;
 
-    // Initialize storage
+    // Initialize repositories
     let db_path = config.data_dir.join("metadata.db");
-    let metadata_store = vectorless_rag::store::MetadataStore::open(&db_path)?;
-    let index_store = vectorless_rag::store::IndexStore::new(&config.index_dir);
+    let metadata_repository = vectorless_service::MetadataRepository::open(&db_path)?;
+    let index_repository = vectorless_service::IndexRepository::new(&config.index_dir);
 
     // Initialize LLM client
     let llm = ZaiClient::with_endpoint(&config.api_key, &config.endpoint);
@@ -44,15 +44,15 @@ async fn main() -> anyhow::Result<()> {
         .build();
 
     // Create app state
-    let state = vectorless_rag::handlers::AppState {
+    let state = vectorless_service::controllers::AppState {
         llm,
-        metadata_store,
-        index_store,
+        metadata_repository,
+        index_repository,
         indexer_config,
     };
 
     // Start server
-    vectorless_rag::run_server(state, &config.host, config.port).await
+    vectorless_service::run_server(state, &config.host, config.port).await
 }
 
 /// Server configuration.
@@ -82,28 +82,28 @@ fn load_config() -> Result<Config, anyhow::Error> {
         .unwrap_or_else(|_| "glm-5".to_string());
 
     Ok(Config {
-        host: std::env::var("RAG_HOST").unwrap_or_else(|_| "0.0.0.0".to_string()),
-        port: std::env::var("RAG_PORT")
+        host: std::env::var("SERVICE_HOST").unwrap_or_else(|_| "0.0.0.0".to_string()),
+        port: std::env::var("SERVICE_PORT")
             .unwrap_or_else(|_| "8080".to_string())
             .parse()?,
-        data_dir: std::env::var("RAG_DATA_DIR")
+        data_dir: std::env::var("SERVICE_DATA_DIR")
             .unwrap_or_else(|_| "./data".to_string())
             .into(),
-        index_dir: std::env::var("RAG_INDEX_DIR")
+        index_dir: std::env::var("SERVICE_INDEX_DIR")
             .unwrap_or_else(|_| "./indices".to_string())
             .into(),
         api_key,
         endpoint,
         model,
-        subsection_threshold: std::env::var("RAG_SUBSECTION_THRESHOLD")
+        subsection_threshold: std::env::var("SERVICE_SUBSECTION_THRESHOLD")
             .unwrap_or_else(|_| "200".to_string())
             .parse()
             .unwrap_or(200),
-        max_segment_tokens: std::env::var("RAG_MAX_SEGMENT_TOKENS")
+        max_segment_tokens: std::env::var("SERVICE_MAX_SEGMENT_TOKENS")
             .unwrap_or_else(|_| "4000".to_string())
             .parse()
             .unwrap_or(4000),
-        max_summary_tokens: std::env::var("RAG_MAX_SUMMARY_TOKENS")
+        max_summary_tokens: std::env::var("SERVICE_MAX_SUMMARY_TOKENS")
             .unwrap_or_else(|_| "200".to_string())
             .parse()
             .unwrap_or(200),

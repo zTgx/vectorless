@@ -4,7 +4,7 @@ members = [
     "core",
     "llm",
     "agent",
-    "rag",
+    "service",
     "cli",
     "sdk",
     "examples/basic",

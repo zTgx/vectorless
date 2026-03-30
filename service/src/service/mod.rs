@@ -1,10 +1,10 @@
 // Copyright (c) 2026 vectorless developers
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-//! Pipeline layer.
+//! Service layer for business logic.
 
 pub mod ingest;
 pub mod query;
 
-pub use ingest::IngestPipeline;
-pub use query::QueryPipeline;
+pub use ingest::IngestService;
+pub use query::{QueryService, QueryResult};

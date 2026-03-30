@@ -17,7 +17,7 @@ path = "src/main.rs"
 # Internal crates
 vectorless-core = { path = "../core" }
 vectorless-llm = { path = "../llm" }
-vectorless-rag = { path = "../rag" }
+vectorless-service = { path = "../service" }
 
 # CLI
 clap = { version = "4", features = ["derive", "env"] }

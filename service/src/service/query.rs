@@ -1,27 +1,27 @@
 // Copyright (c) 2026 vectorless developers
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-//! Query pipeline for retrieving relevant content.
+//! Query service for retrieving relevant content.
 
-use crate::models::{ApiError, Source};
-use crate::store::{IndexStore, MetadataStore};
+use crate::dto::{ApiError, Source, DocumentStatus};
+use crate::repository::{IndexRepository, MetadataRepository};
 use vectorless_core::{retriever::retrieve, storage::load};
 use vectorless_llm::chat::ChatModel;
 
-/// Query pipeline for RAG.
-pub struct QueryPipeline<M> {
+/// Query service for RAG.
+pub struct QueryService<M> {
     llm: M,
-    metadata_store: MetadataStore,
-    index_store: IndexStore,
+    metadata_repository: MetadataRepository,
+    index_repository: IndexRepository,
 }
 
-impl<M: ChatModel> QueryPipeline<M> {
-    /// Create a new query pipeline.
-    pub fn new(llm: M, metadata_store: MetadataStore, index_store: IndexStore) -> Self {
+impl<M: ChatModel> QueryService<M> {
+    /// Create a new query service.
+    pub fn new(llm: M, metadata_repository: MetadataRepository, index_repository: IndexRepository) -> Self {
         Self {
             llm,
-            metadata_store,
-            index_store,
+            metadata_repository,
+            index_repository,
         }
     }
 
@@ -30,7 +30,7 @@ impl<M: ChatModel> QueryPipeline<M> {
         let max_results = max_results.unwrap_or(3);
 
         // Get all ready documents
-        let docs = self.metadata_store.list_documents()?
+        let docs = self.metadata_repository.list_documents()?
             .into_iter()
             .filter(|d| d.status == DocumentStatus::Ready)
             .collect::<Vec<_>>();
@@ -77,10 +77,10 @@ impl<M: ChatModel> QueryPipeline<M> {
     async fn query_document(
         &self,
         query: &str,
-        doc: &crate::models::Document,
+        doc: &crate::dto::Document,
     ) -> Result<Option<(String, Vec<Source>)>, ApiError> {
         // Load the index
-        let index_path = self.index_store.get_index_path(doc.id);
+        let index_path = self.index_repository.get_index_path(doc.id);
         let root = load(&index_path)
             .map_err(|e| ApiError::Storage(format!("Failed to load index: {}", e)))?;
 
@@ -131,5 +131,3 @@ pub struct QueryResult {
     pub answer: String,
     pub sources: Vec<Source>,
 }
-
-use crate::models::DocumentStatus;

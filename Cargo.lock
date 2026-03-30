@@ -2386,7 +2386,7 @@ dependencies = [
  "tracing-subscriber",
  "vectorless-core",
  "vectorless-llm",
- "vectorless-rag",
+ "vectorless-service",
 ]
 
 [[package]]
@@ -2418,7 +2418,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "vectorless-rag"
+name = "vectorless-service"
 version = "0.1.0"
 dependencies = [
  "anyhow",

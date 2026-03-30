@@ -1,10 +1,10 @@
 // Copyright (c) 2026 vectorless developers
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-//! HTTP handlers.
+//! HTTP controllers for handling API requests.
 
-use crate::models::{ApiError, CreateDocumentRequest, CreateDocumentResponse, Document, QueryRequest, QueryResponse, Source, UploadContentRequest};
-use crate::store::{IndexStore, MetadataStore};
+use crate::dto::{ApiError, CreateDocumentRequest, CreateDocumentResponse, Document, QueryRequest, QueryResponse, Source, UploadContentRequest};
+use crate::repository::{IndexRepository, MetadataRepository};
 use axum::{
     extract::{Path, State},
     Json,
@@ -20,8 +20,8 @@ use std::cell::RefCell;
 #[derive(Clone)]
 pub struct AppState {
     pub llm: ZaiClient,
-    pub metadata_store: MetadataStore,
-    pub index_store: IndexStore,
+    pub metadata_repository: MetadataRepository,
+    pub index_repository: IndexRepository,
     pub indexer_config: vectorless_core::IndexerConfig,
 }
 
@@ -30,7 +30,7 @@ pub async fn create_document(
     State(state): State<AppState>,
     Json(req): Json<CreateDocumentRequest>,
 ) -> Result<Json<CreateDocumentResponse>, ApiError> {
-    let doc = state.metadata_store.create_document(req.title)?;
+    let doc = state.metadata_repository.create_document(req.title)?;
     let response = CreateDocumentResponse {
         id: doc.id,
         status: doc.status,
@@ -55,7 +55,7 @@ pub async fn upload_document_content(
     Json(req): Json<UploadContentRequest>,
 ) -> Result<Json<serde_json::Value>, ApiError> {
     // Verify document exists
-    let _doc = state.metadata_store.get_document(id)?
+    let _doc = state.metadata_repository.get_document(id)?
         .ok_or_else(|| ApiError::DocumentNotFound(id.to_string()))?;
 
     if req.content.is_empty() {
@@ -75,7 +75,7 @@ pub async fn get_document(
     Path(id): Path<Uuid>,
 ) -> Result<Json<Document>, ApiError> {
     state
-        .metadata_store
+        .metadata_repository
         .get_document(id)?
         .ok_or_else(|| ApiError::DocumentNotFound(id.to_string()))
         .map(Json)
@@ -85,7 +85,7 @@ pub async fn get_document(
 pub async fn list_documents(
     State(state): State<AppState>,
 ) -> Result<Json<Vec<Document>>, ApiError> {
-    let docs = state.metadata_store.list_documents()?;
+    let docs = state.metadata_repository.list_documents()?;
     Ok(Json(docs))
 }
 
@@ -94,11 +94,11 @@ pub async fn delete_document(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
 ) -> Result<Json<serde_json::Value>, ApiError> {
-    // Delete from metadata store
-    state.metadata_store.delete_document(id)?;
+    // Delete from metadata repository
+    state.metadata_repository.delete_document(id)?;
 
     // Delete index file
-    state.index_store.delete_index(id)?;
+    state.index_repository.delete_index(id)?;
 
     Ok(Json(serde_json::json!({"message": "Document deleted"})))
 }

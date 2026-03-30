@@ -1,7 +1,7 @@
 // Copyright (c) 2026 vectorless developers
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-//! Data models.
+//! Data Transfer Objects (DTOs) for the service API.
 
 pub mod document;
 pub mod query;
