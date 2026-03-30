@@ -17,8 +17,9 @@ pub mod config;
 pub mod markdown;
 pub mod pdf;
 pub mod toc;
+pub mod tree_builder;
 
-pub use node::{PageNode, PageNodeRef};
+pub use node::{PageNode, PageNodeRef, PageNodeRefExt};
 pub use parse::{parse_document, parse_document_with_config, Error as ParseError};
 pub use index::{build_summaries, build_summaries_with_config, Error as IndexError};
 pub use storage::{save, load, Error as StorageError};
@@ -50,4 +51,15 @@ pub use toc::{
     TocConfig,
     TocConfigBuilder,
     Error as TocError,
+};
+pub use tree_builder::{
+    TreeBuilder,
+    extract_page_number,
+    extract_page_range,
+    extract_page_range_with_boundaries,
+    find_node_for_page,
+    collect_nodes_in_page_range,
+    get_path_to_node,
+    validate_page_boundaries,
+    ValidationError,
 };

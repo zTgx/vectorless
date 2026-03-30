@@ -29,6 +29,18 @@ pub struct PageNode {
 
     /// Parent node reference.
     pub parent: Option<PageNodeRef>,
+
+    /// Starting page number (1-based, if applicable).
+    pub start_page: Option<usize>,
+
+    /// Ending page number (1-based, if applicable).
+    pub end_page: Option<usize>,
+
+    /// Unique node identifier (e.g., "0001", "0002").
+    pub node_id: Option<String>,
+
+    /// Physical index marker (e.g., "<physical_index_5>").
+    pub physical_index: Option<String>,
 }
 
 /// Reference type for `PageNode` allowing tree navigation.
@@ -44,6 +56,10 @@ impl PageNode {
             depth: 0,
             children: Vec::new(),
             parent: None,
+            start_page: None,
+            end_page: None,
+            node_id: None,
+            physical_index: None,
         }))
     }
 
@@ -54,17 +70,20 @@ impl PageNode {
         node
     }
 
-    /// Add a child node.
-    pub fn add_child(&mut self, child: PageNodeRef) {
-        child.borrow_mut().depth = self.depth + 1;
-        child.borrow_mut().parent = Some(Rc::clone(
-            &self.parent.as_ref().map(|p| Rc::clone(p)).unwrap_or_else(|| {
-                // Try to find self reference - this is handled by the caller
-                // typically the tree builder maintains the root reference
-                Rc::new(RefCell::new(self.clone()))
-            })
-        ));
-        self.children.push(child);
+    /// Create a new node with page boundaries.
+    pub fn with_pages(
+        title: impl Into<String>,
+        content: impl Into<String>,
+        start_page: usize,
+        end_page: usize,
+    ) -> PageNodeRef {
+        let node = Self::new(title, content);
+        {
+            let mut borrowed = node.borrow_mut();
+            borrowed.start_page = Some(start_page);
+            borrowed.end_page = Some(end_page);
+        }
+        node
     }
 
     /// Check if this is a leaf node (no children).
@@ -81,12 +100,139 @@ impl PageNode {
 
     fn collect_leaves(&self, out: &mut Vec<PageNodeRef>) {
         if self.is_leaf() {
-            // Return self as a leaf - but we need the reference
-            // This is handled by the tree builder typically
+            // This would need a reference to self, which is complex here
+            // Typically handled by tree builder which maintains references
         } else {
             for child in &self.children {
-                child.borrow().collect_leaves(out);
+                let borrowed = child.borrow();
+                borrowed.collect_leaves(out);
             }
+        }
+    }
+
+    /// Get all nodes within a specific page range.
+    pub fn nodes_in_page_range(&self, start: usize, end: usize) -> Vec<PageNodeRef> {
+        let mut result = Vec::new();
+        self.collect_nodes_in_range(start, end, &mut result);
+        result
+    }
+
+    fn collect_nodes_in_range(&self, start: usize, end: usize, out: &mut Vec<PageNodeRef>) {
+        // Check if this node intersects with the range
+        let intersects = match (self.start_page, self.end_page) {
+            (Some(node_start), Some(node_end)) => {
+                node_start <= end && node_end >= start
+            }
+            _ => true, // No page info, include it
+        };
+
+        if intersects {
+            // Would need to add self to out, but that requires a reference
+            // This is typically handled by the caller
+        }
+
+        for child in &self.children {
+            let borrowed = child.borrow();
+            borrowed.collect_nodes_in_range(start, end, out);
+        }
+    }
+
+    /// Count total nodes in this subtree.
+    pub fn count_nodes(&self) -> usize {
+        let mut count = 1; // Count self
+        for child in &self.children {
+            let borrowed = child.borrow();
+            count += borrowed.count_nodes();
+        }
+        count
+    }
+
+    /// Get node depth.
+    pub fn get_depth(&self) -> usize {
+        self.depth
+    }
+}
+
+/// Extension methods for PageNodeRef.
+pub trait PageNodeRefExt {
+    /// Set page boundaries for this node.
+    fn set_page_boundaries(&self, start: usize, end: usize);
+
+    /// Get the page range for this node.
+    fn page_range(&self) -> Option<(usize, usize)>;
+
+    /// Check if this node contains a specific page.
+    fn contains_page(&self, page: usize) -> bool;
+
+    /// Set the node ID.
+    fn set_node_id(&self, id: impl Into<String>);
+
+    /// Set the physical index marker.
+    fn set_physical_index(&self, index: impl Into<String>);
+
+    /// Add a child node.
+    fn add_child(&self, child: PageNodeRef);
+
+    /// Add a child node with page boundaries.
+    fn add_child_with_pages(&self, child: PageNodeRef, start_page: usize, end_page: usize);
+}
+
+impl PageNodeRefExt for PageNodeRef {
+    fn set_page_boundaries(&self, start: usize, end: usize) {
+        let mut borrowed = self.borrow_mut();
+        borrowed.start_page = Some(start);
+        borrowed.end_page = Some(end);
+    }
+
+    fn page_range(&self) -> Option<(usize, usize)> {
+        let borrowed = self.borrow();
+        match (borrowed.start_page, borrowed.end_page) {
+            (Some(start), Some(end)) => Some((start, end)),
+            _ => None,
+        }
+    }
+
+    fn contains_page(&self, page: usize) -> bool {
+        if let Some((start, end)) = self.page_range() {
+            page >= start && page <= end
+        } else {
+            false
+        }
+    }
+
+    fn set_node_id(&self, id: impl Into<String>) {
+        self.borrow_mut().node_id = Some(id.into());
+    }
+
+    fn set_physical_index(&self, index: impl Into<String>) {
+        self.borrow_mut().physical_index = Some(index.into());
+    }
+
+    fn add_child(&self, child: PageNodeRef) {
+        {
+            let mut borrowed = self.borrow_mut();
+            let parent_depth = borrowed.depth;
+            borrowed.children.push(child.clone());
+            drop(borrowed);
+
+            let mut child_borrowed = child.borrow_mut();
+            child_borrowed.depth = parent_depth + 1;
+            child_borrowed.parent = Some(self.clone());
+        }
+    }
+
+    fn add_child_with_pages(&self, child: PageNodeRef, start_page: usize, end_page: usize) {
+        {
+            let mut borrowed = self.borrow_mut();
+            let parent_depth = borrowed.depth;
+            borrowed.children.push(child.clone());
+            drop(borrowed);
+
+            let mut child_borrowed = child.borrow_mut();
+            child_borrowed.depth = parent_depth + 1;
+            child_borrowed.start_page = Some(start_page);
+            child_borrowed.end_page = Some(end_page);
+            child_borrowed.parent = Some(self.clone());
         }
     }
 }

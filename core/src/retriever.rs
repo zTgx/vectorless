@@ -18,7 +18,7 @@ where
 
     loop {
         let borrowed = node.borrow();
-        let is_leaf = borrowed.is_leaf();
+        let is_leaf = borrowed.children.is_empty();
         let has_children = !borrowed.children.is_empty();
         drop(borrowed);
 

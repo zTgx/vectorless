@@ -28,7 +28,7 @@ where
         if children_visited {
             // Children have been processed, now build summary for this node
             let borrowed = node.borrow();
-            let is_leaf = borrowed.is_leaf();
+            let is_leaf = borrowed.children.is_empty();
             let title = borrowed.title.clone();
             let content = borrowed.content.clone();
             drop(borrowed);
